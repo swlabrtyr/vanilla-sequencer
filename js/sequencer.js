@@ -17,8 +17,8 @@ var notesInQueue = []; // the notes that have been put into the web audio,
 // and may or may not have played yet. {note, time}
 var timerWorker = null; // The Web Worker used to fire timer messages
 var waveform, waveformChoice = 0;
-var osc, gain, note, pitch, noteChoice = 0,
-    noteArray = [], buttonArray = [], noteChoiceArray = [], pitchSelectArray = [];
+var osc, gain, note, pitch, noteChoice = 0;
+var noteArray = [], buttonArray = [], noteChoiceArray = [], pitchSelectArray = [];
 
 // var selecteNote = document.getElementById("first-select");
 // selecteNote.addEventListener("onchange", function() {
@@ -57,26 +57,21 @@ function notePicker(value) {
 function scheduler() {
     if (waveformChoice === 0) {
         waveform = "sine";
-    } else if (waveformChoice === 1) {
-        waveform = "sawtooth";
-    } else {
-        waveform = "square";
-    }
-
-    // while (nextNoteTime < audioContext.currentTime + 0.1) {
-    //     for (var i = 0; i < buttonArray.length; i++) {
-    //         if (buttonArray[i].state === "ON") {
-
-    //             scheduleNote(current16thNote, nextNoteTime, waveform, pitch);
-                
-    //             // console.log("Current 16th note: " + current16thNote + "\n" +
-    //             //             "Next note time: " + nextNoteTime + "\n" +
-    //             //             pitch);
-                
-    //             nextNote();
-    //         }
-    //     }
+    } // else if (waveformChoice === 1) {
+    //     waveform = "sawtooth";
+    // } else {
+    //     waveform = "square";
     // }
+
+    while (nextNoteTime < audioContext.currentTime + 0.1) {
+         for (var i = 0; i < buttonArray.length; i++) {
+             if (buttonArray[i].state === "ON") {
+                 // console.log(buttonArray[i].state);
+                 scheduleNote(current16thNote, nextNoteTime, waveform, pitch);
+             }             
+             nextNote();
+        }
+    }
 }
 
 function scheduleNote(beatNumber, time, wave, pitch) {
@@ -87,7 +82,7 @@ function scheduleNote(beatNumber, time, wave, pitch) {
     osc = createOsc(wave);
     console.log(osc.type);
 
-    osc.frequency.value = pitch;
+    osc.frequency.value = 440;
     osc.connect(gain);
     gain.connect(audioContext.destination);
     osc.start(time);
