@@ -1,5 +1,4 @@
 // Web Audio Sequencer
-
 var audioContext = null;
 var isPlaying = false; // Are we currently playing?
 var startTime; // The start time of the entire sequence.
@@ -10,25 +9,13 @@ var lookahead = 25.0; // How frequently to call scheduling function
 
 var nextNoteTime = 0.0; // when the next note is due.
 var noteLength = 0.05; // length of "beep" (in seconds)
-var canvas, // the canvas element
-    canvasContext; // canvasContext is the canvas' context 2D
-var last16thNoteDrawn = -1; // the last "box" we drew on the screen
+
 var notesInQueue = []; // the notes that have been put into the web audio,
 // and may or may not have played yet. {note, time}
 var timerWorker = null; // The Web Worker used to fire timer messages
 var waveform, waveformChoice = 0;
 var osc, gain, note, pitch, noteChoice = 0;
 var noteArray = [], buttonArray = [], noteChoiceArray = [], pitchSelectArray = [];
-
-// var selecteNote = document.getElementById("first-select");
-// selecteNote.addEventListener("onchange", function() {
-//     noteChoice = this.selectedIndex;
-// });
-
-// var selectWaveform = document.getElementById("select-waveform");
-// selectWaveform.addEventListener("onchange", function() {
-//     waveformChoice = this.selectedIndex;
-// });
 
 function createOsc(waveshape) {
     var sine = audioContext.createOscillator();
@@ -37,10 +24,6 @@ function createOsc(waveshape) {
     saw.type = "sawtooth";
     var square = audioContext.createOscillator();
     square.type = "square";
-    
-    // sine.frequency.value = Math.pow(2, (pitch + 1 * 69 - 69) / 12) * 440;
-    // saw.frequency.value = Math.pow(2, (pitch + 1 * 69 - 69) / 12) * 440;
-    // square.frequency.value = Math.pow(2, (pitch + 1 * 69 - 69) / 12) * 440;
 
     if (waveshape === "sine") {
         return sine;
@@ -57,17 +40,17 @@ function notePicker(value) {
 function scheduler() {
     if (waveformChoice === 0) {
         waveform = "sine";
-    } // else if (waveformChoice === 1) {
-    //     waveform = "sawtooth";
-    // } else {
-    //     waveform = "square";
-    // }
+    } else if (waveformChoice === 1) {
+        waveform = "sawtooth";
+    } else {
+        waveform = "square";
+    }
 
     while (nextNoteTime < audioContext.currentTime + 0.1) {
-         for (var i = 0; i < buttonArray.length; i++) {
+         for (var i = 0; i < 16; i++) {
              if (buttonArray[i].state === "ON") {
                  // console.log(buttonArray[i].state);
-                 scheduleNote(current16thNote, nextNoteTime, waveform, pitch);
+                 scheduleNote(current16thNote, nextNoteTime, waveform, notePicker(noteChoice));
              }             
              nextNote();
         }
@@ -75,14 +58,12 @@ function scheduler() {
 }
 
 function scheduleNote(beatNumber, time, wave, pitch) {
-
     console.log(waveformChoice);
 
-    // create an oscillator
     osc = createOsc(wave);
     console.log(osc.type);
 
-    osc.frequency.value = 440;
+    osc.frequency.value = pitch;
     osc.connect(gain);
     gain.connect(audioContext.destination);
     osc.start(time);
@@ -154,8 +135,8 @@ for (var i = 0; i < 16; i++) {
 
 console.log(pitchSelectArray);
 
-// var pitchSelector = document.getElementById("pitch-select-container");
-// pitchSelector.addEventListener("change", selectPitch);
+var pitchSelector = document.getElementById("pitch-select-container");
+pitchSelector.addEventListener("change", selectPitch);
 
 function selectPitch(e) {
     if (e.target.id !== e.currentTarget.id) {
