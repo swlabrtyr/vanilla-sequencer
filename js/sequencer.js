@@ -8,16 +8,16 @@ var lookahead = 25.0; // How frequently to call scheduling function
 // (in milliseconds)
 
 var nextNoteTime = 0.0; // when the next note is due.
-var noteLength = 0.05; // length of "beep" (in seconds)
+var noteLength = 2.5; // length of "beep" (in seconds)
 
 var notesInQueue = []; // the notes that have been put into the web audio,
 // and may or may not have played yet. {note, time}
 var timerWorker = null; // The Web Worker used to fire timer messages
 var waveform, waveformChoice = 0;
-var osc, gain, note, pitch = 440, noteChoice = 0;
+var osc, note, gain, pitch = 440, noteChoice = 0;
 var noteArray = [], buttonArray = [], noteChoiceArray = [], pitchSelectArray = [];
 
-function createOsc(waveshape, note) {
+function createOsc(waveshape, note, amp) {
     var sine = audioContext.createOscillator();
     sine.type = "sine";
     var saw = audioContext.createOscillator();
@@ -28,7 +28,16 @@ function createOsc(waveshape, note) {
     sine.frequency.value = note;
     saw.frequency.value = note;
     square.frequency.value = note;
-
+    
+    var startValue = 0.5;
+    var startTime = 0.3;
+    var endValue = 0.01;
+    var endTime = 1.5;
+    
+    amp.gain.setValueAtTime(0.0, audioContext.currentTime);
+    amp.gain.linearRampToValueAtTime(startValue, audioContext.currentTime + startTime);
+    amp.gain.linearRampToValueAtTime(endValue, audioContext.currentTime + endTime);
+    
     console.log("note: " + note);
 
     if (waveshape === "sine") {
@@ -61,7 +70,8 @@ function scheduler() {
                     buttonArray.indexOf(buttonArray[i])) {
                     pitch = pitchSelectArray[i].value;
                 }
-                scheduleNote(current16thNote, nextNoteTime, waveform, pitch);
+                console.log(gain);
+                scheduleNote(current16thNote, nextNoteTime, waveform, pitch, gain);
             }             
             nextNote();
         }
@@ -74,17 +84,16 @@ pitchSelector.addEventListener("change", selectPitch);
 function scheduleNote(beatNumber, time, wave, note) {
     console.log(waveformChoice);
 
-    osc = createOsc(wave, note);
+    osc = createOsc(wave, note, gain);
     console.log(osc.type);
 
     console.log(pitch);
-    
+
     osc.connect(gain);
+    
     gain.connect(audioContext.destination);
     osc.start(time);
     osc.stop(time + noteLength);
-
-    return osc;
 
 }
 
@@ -224,14 +233,15 @@ function init() {
     }
 
     audioContext = new AudioContext();
-    gain = audioContext.createGain();
-    gain.gain.value = 0.5;
+    // gain = audioContext.createGain();
+    // gain.gain.value = 0.5;
     // if we wanted to load audio files, etc., this is where we should do it.
 
     // window.onorientationchange = resetCanvas;
     // window.onresize = resetCanvas;
 
     // requestAnimationFrame(draw); // start the drawing loop.
+    gain = audioContext.createGain();
 
     timerWorker = new Worker("js/sequencer-worker.js");
 
@@ -249,9 +259,6 @@ function init() {
 }
 
 window.addEventListener("load", init);
-
-
-
 
 
 
