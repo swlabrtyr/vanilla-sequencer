@@ -47,12 +47,12 @@ function scheduler() {
     }
 
     while (nextNoteTime < audioContext.currentTime + 0.1) {
-         for (var i = 0; i < 16; i++) {
-             if (buttonArray[i].state === "ON") {
-                 // console.log(buttonArray[i].state);
-                 scheduleNote(current16thNote, nextNoteTime, waveform, notePicker(noteChoice));
-             }             
-             nextNote();
+        for (var i = 0; i < 16; i++) {
+            if (buttonArray[i].state === "ON") {
+                // console.log(buttonArray[i].state);
+                scheduleNote(current16thNote, nextNoteTime, waveform, notePicker(noteChoice));
+            }             
+            nextNote();
         }
     }
 }
@@ -85,7 +85,7 @@ for (var q = 0; q < 32; q++) {
         {
             ID: q,
             state: "OFF",
-            note: null
+            note: 440
         });
 }
 
@@ -122,17 +122,6 @@ function buttonToggle(e) {
     }
 }
 
-for (var i = 0; i < 16; i++) {
-    pitchSelectArray.push(
-        {ID: "select-" + i,
-         notes: [],
-         value: 440
-        });
-    for (var j = 0; j < 12; j++) {
-        pitchSelectArray[i].notes.push(j);
-    }
-}
-
 console.log(pitchSelectArray);
 
 var pitchSelector = document.getElementById("pitch-select-container");
@@ -142,16 +131,24 @@ function selectPitch(e) {
     if (e.target.id !== e.currentTarget.id) {
         console.log("test");
         console.log(e.target.id);
+
         for (var i = 0; i < pitchSelectArray.length; i++) {
-            for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {
-                if (pitchSelectArray[i].ID === e.target.id
-                    && noteChoice === pitchSelectArray[i].notes[j]) {
-                    pitch = pitchSelectArray[i].value = notePicker(noteChoice);
-                    // console.log(pitchSelectArray[i]);
-                    // console.log(pitchSelectArray[i].notes[j]);
-                    console.log("value selected: " + noteChoice + "\n" +
-                                "note selected " +  pitch + "\n" +
-                                "pitch log: " + pitchSelectArray[i].value);
+            if (pitchSelectArray.indexOf(pitchSelectArray[i]) ===
+                buttonArray.indexOf(buttonArray[i])) {
+                
+                // console.log("pitch index: " + pitchSelectArray.indexOf(pitchSelectArray[i]));
+                // console.log("button index: " + buttonArray.indexOf(buttonArray[i]));
+                
+                for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {
+                    
+                    if (pitchSelectArray[i].ID === e.target.id
+                        && noteChoice === pitchSelectArray[i].notes[j]) {
+                        pitch = pitchSelectArray[i].value = notePicker(noteChoice);
+                        // console.log(pitchSelectArray[i]);
+                        // console.log(pitchSelectArray[i].notes[j]);
+                        console.log("value selected: " + noteChoice + "\n" +
+                                    "note selected " +  pitch);
+                    }
                 }
             }
         }
@@ -184,6 +181,17 @@ function init() {
     var container = document.createElement('div');
 
     container.className = "container";
+
+    for (var i = 0; i < 16; i++) {
+        pitchSelectArray.push(
+            {ID: "select-" + i,
+             notes: [],
+             value: 440
+            });
+        for (var j = 0; j < 12; j++) {
+            pitchSelectArray[i].notes.push(j);
+        }
+    }
 
     audioContext = new AudioContext();
     gain = audioContext.createGain();
