@@ -14,16 +14,22 @@ var notesInQueue = []; // the notes that have been put into the web audio,
 // and may or may not have played yet. {note, time}
 var timerWorker = null; // The Web Worker used to fire timer messages
 var waveform, waveformChoice = 0;
-var osc, gain, note, pitch, noteChoice = 0;
+var osc, gain, note, pitch = 440, noteChoice = 0;
 var noteArray = [], buttonArray = [], noteChoiceArray = [], pitchSelectArray = [];
 
-function createOsc(waveshape) {
+function createOsc(waveshape, note) {
     var sine = audioContext.createOscillator();
     sine.type = "sine";
     var saw = audioContext.createOscillator();
     saw.type = "sawtooth";
     var square = audioContext.createOscillator();
     square.type = "square";
+
+    sine.frequency.value = note;
+    saw.frequency.value = note;
+    square.frequency.value = note;
+
+    console.log("note: " + note);
 
     if (waveshape === "sine") {
         return sine;
@@ -49,25 +55,37 @@ function scheduler() {
     while (nextNoteTime < audioContext.currentTime + 0.1) {
         for (var i = 0; i < 16; i++) {
             if (buttonArray[i].state === "ON") {
-                // console.log(buttonArray[i].state);
-                scheduleNote(current16thNote, nextNoteTime, waveform, notePicker(noteChoice));
+                console.log("button: " + buttonArray[i].ID);
+                console.log(pitch);
+                if (pitchSelectArray.indexOf(pitchSelectArray[i]) ===
+                    buttonArray.indexOf(buttonArray[i])) {
+                    pitch = pitchSelectArray[i].value;
+                }
+                scheduleNote(current16thNote, nextNoteTime, waveform, pitch);
             }             
             nextNote();
         }
     }
 }
 
-function scheduleNote(beatNumber, time, wave, pitch) {
+var pitchSelector = document.getElementById("pitch-select-container");
+pitchSelector.addEventListener("change", selectPitch);
+
+function scheduleNote(beatNumber, time, wave, note) {
     console.log(waveformChoice);
 
-    osc = createOsc(wave);
+    osc = createOsc(wave, note);
     console.log(osc.type);
 
-    osc.frequency.value = pitch;
+    console.log(pitch);
+    
     osc.connect(gain);
     gain.connect(audioContext.destination);
     osc.start(time);
     osc.stop(time + noteLength);
+
+    return osc;
+
 }
 
 function nextNote() {
@@ -78,15 +96,6 @@ function nextNote() {
     if (current16thNote == 16) {
         current16thNote = 0;
     }
-}
-
-for (var q = 0; q < 32; q++) {
-    buttonArray.push(
-        {
-            ID: q,
-            state: "OFF",
-            note: 440
-        });
 }
 
 var container = document.getElementById("container");
@@ -120,40 +129,50 @@ function buttonToggle(e) {
             }
         }
     }
+    // console.log(e.target.id);
+    console.log(pitchSelectArray[e.target.id].value);
 }
 
 console.log(pitchSelectArray);
 
-var pitchSelector = document.getElementById("pitch-select-container");
-pitchSelector.addEventListener("change", selectPitch);
+// function pitchToggle(e) {
+//     for (var i = 0; i < pitchSelectArray.length; i++) {
+//         if (pitchSelectArray.indexOf(pitchSelectArray[i]) ===
+//             buttonArray.indexOf(buttonArray[i])) {
+//             selectPitch(e);
+//         }
+//     }
+// }
 
 function selectPitch(e) {
     if (e.target.id !== e.currentTarget.id) {
         console.log("test");
         console.log(e.target.id);
-
         for (var i = 0; i < pitchSelectArray.length; i++) {
-            if (pitchSelectArray.indexOf(pitchSelectArray[i]) ===
-                buttonArray.indexOf(buttonArray[i])) {
+            // console.log("pitch index: " + pitchSelectArray.indexOf(pitchSelectArray[i]));
+            // console.log("button index: " + buttonArray.indexOf(buttonArray[i]));
+            
+            for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {
                 
-                // console.log("pitch index: " + pitchSelectArray.indexOf(pitchSelectArray[i]));
-                // console.log("button index: " + buttonArray.indexOf(buttonArray[i]));
-                
-                for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {
-                    
-                    if (pitchSelectArray[i].ID === e.target.id
-                        && noteChoice === pitchSelectArray[i].notes[j]) {
-                        pitch = pitchSelectArray[i].value = notePicker(noteChoice);
-                        // console.log(pitchSelectArray[i]);
-                        // console.log(pitchSelectArray[i].notes[j]);
-                        console.log("value selected: " + noteChoice + "\n" +
-                                    "note selected " +  pitch);
-                    }
+                if (pitchSelectArray[i].ID === e.target.id
+                    && noteChoice === pitchSelectArray[i].notes[j]) {
+                    pitchSelectArray[i].value = notePicker(noteChoice);
+                    // console.log(pitchSelectArray[i]);
+                    // console.log(pitchSelectArray[i].notes[j]);
+                    // console.log(pitchSelectArray[i].value);
+                    // console.log("value selected: " + noteChoice + "\n" +
+                    //             "note selected " +  pitch);
+                    //pitch = pitchSelectArray[i].value;
+                    //console.log(pitchSelectArray[e.target.id].value;
+                   // pitch = pitchSelectArray[i].value;
+                    console.log(pitch);
                 }
             }
         }
     }
 }
+
+console.log(pitch);
 
 var clickPlay = document.getElementById("play-button");
 clickPlay.addEventListener("click", play, false);
@@ -181,6 +200,16 @@ function init() {
     var container = document.createElement('div');
 
     container.className = "container";
+    
+    // popluate pitch and button arrays
+
+    for (var q = 0; q < 32; q++) {
+        buttonArray.push(
+            {
+                ID: q,
+                state: "OFF"
+            });
+    }
 
     for (var i = 0; i < 16; i++) {
         pitchSelectArray.push(
@@ -188,6 +217,7 @@ function init() {
              notes: [],
              value: 440
             });
+        
         for (var j = 0; j < 12; j++) {
             pitchSelectArray[i].notes.push(j);
         }
