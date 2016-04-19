@@ -1,21 +1,24 @@
 // Web Audio Sequencer
 var audioContext = null;
 var isPlaying = false; // Are we currently playing?
-var startTime; // The start time of the entire sequence.
+var beginTime; // The start time of the entire sequence.
 var current16thNote; // What note is currently last scheduled?
 var tempo = 120.0; // tempo (in beats per minute)
 var lookahead = 25.0; // How frequently to call scheduling function
 // (in milliseconds)
 
 var nextNoteTime = 0.0; // when the next note is due.
-var noteLength = 2.5; // length of "beep" (in seconds)
+var noteLength = 1.5; // length of "beep" (in seconds)
 
-var notesInQueue = []; // the notes that have been put into the web audio,
-// and may or may not have played yet. {note, time}
 var timerWorker = null; // The Web Worker used to fire timer messages
 var waveform, waveformChoice = 0;
 var osc, note, gain, pitch = 440, noteChoice = 0;
 var noteArray = [], buttonArray = [], noteChoiceArray = [], pitchSelectArray = [];
+
+var startValue = 0.5;
+var startTime = 0.3;
+var endValue = 0.01;
+var endTime = 1.5;
 
 function createOsc(waveshape, note, amp) {
     var sine = audioContext.createOscillator();
@@ -28,11 +31,6 @@ function createOsc(waveshape, note, amp) {
     sine.frequency.value = note;
     saw.frequency.value = note;
     square.frequency.value = note;
-    
-    var startValue = 0.5;
-    var startTime = 0.3;
-    var endValue = 0.01;
-    var endTime = 1.5;
     
     amp.gain.setValueAtTime(0.0, audioContext.currentTime);
     amp.gain.linearRampToValueAtTime(startValue, audioContext.currentTime + startTime);
@@ -49,7 +47,7 @@ function createOsc(waveshape, note, amp) {
 }
 
 function notePicker(value) {
-    return Math.pow(2, (value + 1 * 69 - 69) / 12) * 440;
+    return Math.pow(2, (value + 1 * 69 - 69) / 12) * 440 - 500;
 }
 
 function scheduler() {
@@ -93,7 +91,7 @@ function scheduleNote(beatNumber, time, wave, note) {
     
     gain.connect(audioContext.destination);
     osc.start(time);
-    osc.stop(time + noteLength);
+    osc.stop(time + endTime);
 
 }
 
@@ -138,42 +136,20 @@ function buttonToggle(e) {
             }
         }
     }
-    // console.log(e.target.id);
     console.log(pitchSelectArray[e.target.id].value);
 }
 
 console.log(pitchSelectArray);
-
-// function pitchToggle(e) {
-//     for (var i = 0; i < pitchSelectArray.length; i++) {
-//         if (pitchSelectArray.indexOf(pitchSelectArray[i]) ===
-//             buttonArray.indexOf(buttonArray[i])) {
-//             selectPitch(e);
-//         }
-//     }
-// }
 
 function selectPitch(e) {
     if (e.target.id !== e.currentTarget.id) {
         console.log("test");
         console.log(e.target.id);
         for (var i = 0; i < pitchSelectArray.length; i++) {
-            // console.log("pitch index: " + pitchSelectArray.indexOf(pitchSelectArray[i]));
-            // console.log("button index: " + buttonArray.indexOf(buttonArray[i]));
-            
             for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {
-                
                 if (pitchSelectArray[i].ID === e.target.id
                     && noteChoice === pitchSelectArray[i].notes[j]) {
                     pitchSelectArray[i].value = notePicker(noteChoice);
-                    // console.log(pitchSelectArray[i]);
-                    // console.log(pitchSelectArray[i].notes[j]);
-                    // console.log(pitchSelectArray[i].value);
-                    // console.log("value selected: " + noteChoice + "\n" +
-                    //             "note selected " +  pitch);
-                    //pitch = pitchSelectArray[i].value;
-                    //console.log(pitchSelectArray[e.target.id].value;
-                   // pitch = pitchSelectArray[i].value;
                     console.log(pitch);
                 }
             }
@@ -233,14 +209,7 @@ function init() {
     }
 
     audioContext = new AudioContext();
-    // gain = audioContext.createGain();
-    // gain.gain.value = 0.5;
-    // if we wanted to load audio files, etc., this is where we should do it.
 
-    // window.onorientationchange = resetCanvas;
-    // window.onresize = resetCanvas;
-
-    // requestAnimationFrame(draw); // start the drawing loop.
     gain = audioContext.createGain();
 
     timerWorker = new Worker("js/sequencer-worker.js");
