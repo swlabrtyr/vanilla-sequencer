@@ -1,3 +1,7 @@
+body {
+    background-color: skyblue;
+}
+
 #controls {
     font-family: arial;
     font-size: 24px;
@@ -41,44 +45,49 @@
 }
 
 #showTempo {
-    display: inline-block;
-    width: 45px;
+    display:inline-block;
+    width:45px;
 }
 
 #showSwing {
-    display: inline-block;
-    width: 40px;
+    display:inline-block;
+    width:40px;
 }
 
 * {
-    -webkit-user-select: none;
-}
-
-html {
-    margin: 0;
-    height: 100%;
-    position: relative;
+    -webkit-user-select:none;
 }
 
 body {
-    overflow: auto;
+    overflow:auto;
 }
 
 .box {
-    margin: 5px;
-    padding: 5px;
-    background-color: red;
-    width: 40px;
-    height: 40px;
-    float: left;
+    margin:5px;
+    padding:5px;
+    background-color:teal;
+    width:40px;
+    height:40px;
+    float:left;
 }
 
 last-box {
-    float: none;
+    float:none;
 }
 
 .note-picker {
-    margin: 4px;
-    padding: 2px;
-    float: left;
+    padding:1.5px;
+    float:left;
+}
+
+/* #pitch-select-container { */
+/*     position: fixed; */
+/*     top: 300px; */
+/*     padding: 4px; */
+/* } */
+
+#container {
+    top:50%;
+    left:50%
+    positon:absolute;
 }
