@@ -91,12 +91,19 @@ function createOsc2(waveshape, note, detune) {
     return osc2;
 }    
 
-function scheduleNote(beatNumber, time, wave, note) {
-    var osc1 = createOsc1(wave, note, 3);
-    var osc2 = createOsc2(wave, note, 10);
-    var attack = 0.1;
-    var decay = 0.8;
-    var sustain = 0.8;
+function scheduleNote(time, wave, note) {
+    var osc1 = createOsc1(wave, note, 55);
+    var osc2 = createOsc2(wave, note, 7);
+
+    // amplitude envelope values
+    var ampAtk = 0.1;
+    var ampSus = 0.8;
+    var ampDec = 1.0;
+
+    // filter envelope values
+    var filterAtk = 0.5;
+    var filterSus = 0.3;
+    var filterDec = 0.7;
     
     console.log("1st oscillator: " + osc1);
     console.log("2nd oscillator: " + osc2);
@@ -104,20 +111,32 @@ function scheduleNote(beatNumber, time, wave, note) {
     osc2.start(time);
     
     var gain = audioContext.createGain();
-    osc1.connect(gain);
-    osc2.connect(gain);
-    // envelope
+    
+    // amplitude envelope
     gain.gain.setValueAtTime(0.001, time);
-    gain.gain.exponentialRampToValueAtTime(0.5, time + attack);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + sustain + decay);
+    // gain.gain.setTargetAtTime(0.1, time + 0.01, 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.5, time + ampAtk);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + ampSus + ampDec);
     // add small padding at the end (0.01) to prevent clipping when oscillator stops
-    osc1.stop(time + sustain + decay + 0.1);
-    osc2.stop(time + sustain + decay + 0.1);
+    osc1.stop(time + ampSus + ampDec + 0.1);
+    osc2.stop(time + ampSus + ampDec + 0.1);
+
+    var filter = audioContext.createBiquadFilter();
+    filter.type = "lowpass";
+    
+    // filter envelope
+    filter.frequency.setValueAtTime(100, time);
+    filter.frequency.exponentialRampToValueAtTime(3040, time + filterAtk);
+    filter.frequency.exponentialRampToValueAtTime(0.01, time + filterSus + filterDec);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
     gain.connect(audioContext.destination);
     
     console.log(time + endTime);
 }
-
+// using for loop
 function scheduler() {
     if (waveformChoice === 0) {
         waveform = "sine";
@@ -137,12 +156,33 @@ function scheduler() {
                     buttonArray.indexOf(buttonArray[i])) {
                     pitch = pitchSelectArray[i].value;
                 }
-                scheduleNote(current16thNote, nextNoteTime, waveform, pitch);
+                scheduleNote(nextNoteTime, waveform, pitch);
             }             
             nextNote();
         }
     }
 }
+// using .map
+// function scheduler() {
+//     if (waveformChoice === 0) {
+//         waveform = "sine";
+//     } else if (waveformChoice === 1) {
+//         waveform = "sawtooth";
+//     } else {
+//         waveform = "square";
+//     }
+
+//     var currentTime = audioContext.currentTime;
+    
+//     if (nextNoteTime < currentTime + 0.1) {
+//         buttonArray.map((item) => {
+//             if (item.state === "ON") {
+//                 console.log("button: " + item.ID);
+//                 if ()
+//             }
+//         });
+//     }
+// }
 
 function nextNote() {
     var secondsPerBeat = 60.0 / tempo;
@@ -186,18 +226,31 @@ function buttonToggle(e) {
 }
 
 console.log(pitchSelectArray);
+// using for loop
+// function selectPitch(e) {
+//     if (e.target.id !== e.currentTarget.id) {
+//         for (var i = 0; i < pitchSelectArray.length; i++) {
+//             for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {    
 
+//                 if (pitchSelectArray[i].ID === e.target.id
+//                     && noteChoice === pitchSelectArray[i].notes[j]) {
+//                     pitchSelectArray[i].value = notePicker(noteChoice);
+//                 }
+//             }
+//         }
+//     }
+// }
+// using .map
 function selectPitch(e) {
     if (e.target.id !== e.currentTarget.id) {
-        for (var i = 0; i < pitchSelectArray.length; i++) {
-            for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {    
-
-                if (pitchSelectArray[i].ID === e.target.id
-                    && noteChoice === pitchSelectArray[i].notes[j]) {
-                    pitchSelectArray[i].value = notePicker(noteChoice);
+        pitchSelectArray.map((item) => {
+            item.notes.map((item) => {
+                if (item.ID === e.target.id
+                   && noteChoice === item.notes) {
+                    item.value = notePicker(noteChoice);
                 }
-            }
-        }
+            });
+        });
     }
 }
 
