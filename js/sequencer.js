@@ -33,37 +33,21 @@ function init() {
             }
         );
     }
-    
-    for (var i = 0; i < 32; i++) {
-
-        pitchSelectArray.push(
-            {
-                ID: "select-" + i,
-                notes: [],
-                // initial note value
-                value: 110
-            }
-        );
-        // populate notes array
-        for (var j = 0; j < 12; j++) {
-            pitchSelectArray[i].notes.push(j);
-        }
-    }
-    
-    timerWorker = new Worker("js/sequencer-worker.js");
-
-    timerWorker.onmessage = function(e) {
-        if (e.data == "tick") {
-            // console.log("tick!");
-            scheduler();
-        } else
-            console.log("message: " + e.data);
-    };
-
-    timerWorker.postMessage({
-        "interval": lookahead
-    });
 }
+
+timerWorker = new Worker("js/sequencer-worker.js");
+
+timerWorker.onmessage = function(e) {
+    if (e.data == "tick") {
+        // console.log("tick!");
+        scheduler();
+    } else
+        console.log("message: " + e.data);
+};
+
+timerWorker.postMessage({
+    "interval": lookahead
+});
 
 function notePicker(value) {
     return Math.pow(2, (value + 1 * 69 - 69) / 12) * 110;
@@ -90,6 +74,26 @@ function createOsc2(waveshape, note, detune) {
     osc2.detune.value = detune;
     return osc2;
 }    
+
+function delayFX(time, fbAmount) {
+    var delay = audioContext.createDelay();
+    delay.delayTime.value = time;
+
+    var feedback = audioContext.createGain();
+    feedback.gain.value = fbAmount;
+
+    var filter = audioContext.createBiquadFilter();
+
+    filter.connect(delay);
+    delay.connect(feedback);
+    feedback.connect(filter);
+    delay.connect(audioContext.destination);
+
+    return filter;
+}
+
+var delay = delayFX(0.3, 0.7);
+delay.connect(audioContext.destination);
 
 function scheduleNote(time, wave, note) {
     var osc1 = createOsc1(wave, note, 55);
@@ -132,7 +136,8 @@ function scheduleNote(time, wave, note) {
     osc1.connect(filter);
     osc2.connect(filter);
     filter.connect(gain);
-    gain.connect(audioContext.destination);
+    gain.connect(delay);
+    delay.connect(audioContext.destination);
     
     console.log(time + endTime);
 }
@@ -188,7 +193,7 @@ function nextNote() {
     var secondsPerBeat = 60.0 / tempo;
     nextNoteTime += startTime * secondsPerBeat;
     // console.log("nextNoteTime: " + nextNoteTime);
-
+    
     current16thNote++; 
     if (current16thNote == 16) {
         current16thNote = 0;
@@ -225,34 +230,69 @@ function buttonToggle(e) {
     console.log(pitchSelectArray[e.target.id].value);
 }
 
-console.log(pitchSelectArray);
-// using for loop
-// function selectPitch(e) {
+// function buttonToggle(e) {
 //     if (e.target.id !== e.currentTarget.id) {
-//         for (var i = 0; i < pitchSelectArray.length; i++) {
-//             for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {    
-
-//                 if (pitchSelectArray[i].ID === e.target.id
-//                     && noteChoice === pitchSelectArray[i].notes[j]) {
-//                     pitchSelectArray[i].value = notePicker(noteChoice);
-//                 }
+//         var target = Number(e.target.id);
+//         buttonArray.map((item) => {
+//             if (target === item.id && item.state = "OFF") {
+                
 //             }
-//         }
+//         });
 //     }
 // }
-// using .map
-function selectPitch(e) {
-    if (e.target.id !== e.currentTarget.id) {
-        pitchSelectArray.map((item) => {
-            item.notes.map((item) => {
-                if (item.ID === e.target.id
-                   && noteChoice === item.notes) {
-                    item.value = notePicker(noteChoice);
-                }
-            });
-        });
+
+// populate pitchSelectArray
+for (var i = 0; i < 32; i++) {
+
+    pitchSelectArray.push(
+        {
+            ID: "select-" + i,
+            notes: [],
+            // initial note value
+            value: 110
+        }
+    );
+    // populate notes array
+    for (var j = 0; j < 12; j++) {
+        pitchSelectArray[i].notes.push(j);
     }
 }
+
+function selectPitch(e) {
+    if (e.target.id !== e.currentTarget.id) {
+        for (var i = 0; i < pitchSelectArray.length; i++) {
+            for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {    
+
+                // noteChoice var is selected in index.html
+
+                if (pitchSelectArray[i].ID === e.target.id
+                    && noteChoice === pitchSelectArray[i].notes[j]) 
+                { 
+                    pitchSelectArray[i].value = notePicker(noteChoice);
+                    console.log("note choice: " +  pitchSelectArray[i].value);
+                }
+            }
+        }
+    }
+}
+
+// console.log(noteChoice); // globally noteChoice is undefined..? why? 
+// using .map
+// function selectPitch(e) {
+//     if (e.target.id !== e.currentTarget.id) {
+//         pitchSelectArray.map((item) => {
+//             item.notes.map((item) => {
+//                 if (item.ID === e.target.id
+//                    && noteChoice === item.notes) {
+//                     console.log(noteChoice);
+//                     item.value = notePicker(noteChoice);
+//                 }
+//             });
+//         });
+//     }
+//     console.log("noteChoice: " + noteChoice);
+// }
+
 
 var clickPlay = document.getElementById("play-button");
 clickPlay.addEventListener("click", play, false);
@@ -280,6 +320,13 @@ function play() {
 }
 
 window.addEventListener("load", init);
+
+// slider
+document.getElementById('slider')
+
+
+
+
 
 
 

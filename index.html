@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width user-scalable=no">
     <title>Sequencer</title>
     <link rel="stylesheet" href="css/style.css">
+
   </head>
 
   <body>
@@ -15,7 +16,7 @@
       <div id="tempoBox">Tempo: <span id="showTempo">120</span>BPM <input id="tempo" type="range" min="30.0" max="160.0" step="1" value="120" style="height: 20px; width: 200px" onInput="tempo = event.target.value; document.getElementById('showTempo').innerText=tempo;"></div>
       <div>Waveform:<select onchange="waveformChoice = this.selectedIndex"><option>Sine<option>Sawtooth<option>Square</select></div>
     </div>
-
+    
     <div id="container">
       <div id="container-1">
         <div class="box" id="0"></div>
@@ -674,6 +675,8 @@
       </div>
     </div>
 
+    <input id="slider" type="range" min="0" max="2" step="0.01">
+    
     <script src="http://cwilso.github.io/AudioContext-MonkeyPatch/AudioContextMonkeyPatch.js"></script>
     <script src="js/sequencer.js"></script>
   </body>
