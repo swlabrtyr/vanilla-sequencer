@@ -92,4 +92,23 @@ last-box {
     positon:absolute;
 }
 
+.slider-ctrl {
+    position: relative;
+    top: 10px;
+    padding: 20px;
+    font-family: arial;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 15px;
+}
+
+.slider {
+    position: relative;
+    top: 10px;    
+}
+
+
+
+
+
 

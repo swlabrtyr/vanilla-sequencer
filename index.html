@@ -14,7 +14,7 @@
     <div id="controls">
       <div><a class="play" id="play-button">play</a></div>
       <div id="tempoBox">Tempo: <span id="showTempo">120</span>BPM <input id="tempo" type="range" min="30.0" max="160.0" step="1" value="120" style="height: 20px; width: 200px" onInput="tempo = event.target.value; document.getElementById('showTempo').innerText=tempo;"></div>
-      <div>Waveform:<select onchange="waveformChoice = this.selectedIndex"><option>Sine<option>Sawtooth<option>Square</select></div>
+      <div>Waveform:<select onchange="waveformChoice = this.selectedIndex"><option>Square<option>Sawtooth<option>Sine</select></div>
     </div>
     
     <div id="container">
@@ -675,12 +675,15 @@
       </div>
     </div>
 
-    <input id="slider" type="range" min="0" max="2" step="0.01">
-    
+    <div>
+      <span class="slider-ctrl">Delay Time</span>
+      <input id="slider1" class="slider" type="range" min="0" max="3" step="0.01">
+      <span class="slider-ctrl">Delay Feedback</span>
+      <input id="slider2" class="slider" type="range" min="0" max="0.9" step="0.01">
+    </div>
     <script src="http://cwilso.github.io/AudioContext-MonkeyPatch/AudioContextMonkeyPatch.js"></script>
     <script src="js/sequencer.js"></script>
   </body>
-
 </html>
 
 

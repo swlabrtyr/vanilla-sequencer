@@ -53,9 +53,6 @@ function notePicker(value) {
     return Math.pow(2, (value + 1 * 69 - 69) / 12) * 110;
 }
 
-var pitchSelector = document.getElementById("pitch-select-container");
-pitchSelector.addEventListener("change", selectPitch);
-
 var lookahead = startTime + 0.1; // How frequently to call scheduling function
 // (in milliseconds)
 
@@ -73,7 +70,10 @@ function createOsc2(waveshape, note, detune) {
     osc2.frequency.value = note;
     osc2.detune.value = detune;
     return osc2;
-}    
+}
+
+var delay = delayFX(0.3, 0.7);
+var verb = verbFX();
 
 function delayFX(time, fbAmount) {
     var delay = audioContext.createDelay();
@@ -83,17 +83,55 @@ function delayFX(time, fbAmount) {
     feedback.gain.value = fbAmount;
 
     var filter = audioContext.createBiquadFilter();
-
+    filter.frequency.value = 1000;
+    filter.Q.value = 0.5;
+    
     filter.connect(delay);
     delay.connect(feedback);
     feedback.connect(filter);
     delay.connect(audioContext.destination);
+    // slider
+    document.querySelector('#slider1').addEventListener('input', function() {
+        delay.delayTime.value = this.value;
+        console.log("delay time: " + this.value);
+    });
+
+    document.querySelector('#slider2').addEventListener('input', function() {
+        feedback.gain.value = this.value;
+        console.log("feedback ammount: " + this.value);
+    });
 
     return filter;
 }
 
-var delay = delayFX(0.3, 0.7);
-delay.connect(audioContext.destination);
+function verbFX() {
+    var source, verbBuffer, verb = audioContext.createConvolver();
+    
+    var request = new XMLHttpRequest();
+    request.open("GET",
+                 "https://dl.dropboxusercontent.com/u/428242181/abernyte_grain_silo_ir_edit.wav",
+                 true);
+    request.responseType = "arraybuffer";
+
+    request.onload = function() {
+        console.log("reponse data: " + request.response);
+        audioContext.decodeAudioData(request.response, function(buffer) {
+            verb.buffer = buffer;
+        }, function (e) {
+            console.log("error decoding audio data: " + e.err);
+        });
+    };
+    request.send();
+
+    // var verbGain = audioContext.createGain();
+    // verbGain.gain.value = 0.8;
+    
+    // verb.connect(verbGain);
+    // verbGain.connect(audioContext.destination);
+
+    // return verbGain;
+    return verb;
+}
 
 function scheduleNote(time, wave, note) {
     var osc1 = createOsc1(wave, note, 55);
@@ -137,18 +175,20 @@ function scheduleNote(time, wave, note) {
     osc2.connect(filter);
     filter.connect(gain);
     gain.connect(delay);
-    delay.connect(audioContext.destination);
+    // delay.connect(audioContext.destination);
+    delay.connect(verb);
+    verb.connect(audioContext.destination);     
     
     console.log(time + endTime);
 }
 // using for loop
 function scheduler() {
     if (waveformChoice === 0) {
-        waveform = "sine";
+        waveform = "square";
     } else if (waveformChoice === 1) {
         waveform = "sawtooth";
     } else {
-        waveform = "square";
+        waveform = "sine";
     }
     
     var currentTime = audioContext.currentTime;
@@ -241,6 +281,9 @@ function buttonToggle(e) {
 //     }
 // }
 
+var pitchSelector = document.getElementById("pitch-select-container");
+pitchSelector.addEventListener("change", selectPitch);
+
 // populate pitchSelectArray
 for (var i = 0; i < 32; i++) {
 
@@ -264,7 +307,6 @@ function selectPitch(e) {
             for (var j = 0; j < pitchSelectArray[i].notes.length; j++) {    
 
                 // noteChoice var is selected in index.html
-
                 if (pitchSelectArray[i].ID === e.target.id
                     && noteChoice === pitchSelectArray[i].notes[j]) 
                 { 
@@ -304,7 +346,6 @@ function play() {
     
     if (isPlaying) { 
         current16thNote = 0;
-        console.log(audioContext);
         nextNoteTime = currentTime;
 
         clickPlay.innerHTML = "stop";
@@ -321,8 +362,7 @@ function play() {
 
 window.addEventListener("load", init);
 
-// slider
-document.getElementById('slider')
+
 
 
 
