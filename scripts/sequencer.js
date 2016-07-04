@@ -38,7 +38,7 @@ function init() {
 timerWorker = new Worker("js/sequencer-worker.js");
 
 timerWorker.onmessage = function(e) {
-    if (e.data == "tick") {
+    if (e.data === "tick") {
         // console.log("tick!");
         scheduler();
     } else
@@ -91,12 +91,13 @@ function delayFX(time, fbAmount) {
     feedback.connect(filter);
     delay.connect(audioContext.destination);
     // slider
-    document.querySelector('#slider1').addEventListener('input', function() {
+    document.getElementById('delay-t').addEventListener('input', function() {
+        console.log('input received');
         delay.delayTime.value = this.value;
         console.log("delay time: " + this.value);
     });
 
-    document.querySelector('#slider2').addEventListener('input', function() {
+    document.getElementById('fb-amnt').addEventListener('input', function() {
         feedback.gain.value = this.value;
         console.log("feedback ammount: " + this.value);
     });
@@ -105,7 +106,7 @@ function delayFX(time, fbAmount) {
 }
 
 function verbFX() {
-    var source, verbBuffer, verb = audioContext.createConvolver();
+    var verb = audioContext.createConvolver();
     
     var request = new XMLHttpRequest();
     request.open("GET",
@@ -123,13 +124,7 @@ function verbFX() {
     };
     request.send();
 
-    // var verbGain = audioContext.createGain();
-    // verbGain.gain.value = 0.8;
-    
-    // verb.connect(verbGain);
-    // verbGain.connect(audioContext.destination);
-
-    // return verbGain;
+    console.log(verb);
     return verb;
 }
 
@@ -176,9 +171,17 @@ function scheduleNote(time, wave, note) {
     filter.connect(gain);
     gain.connect(delay);
     // delay.connect(audioContext.destination);
-    delay.connect(verb);
-    verb.connect(audioContext.destination);     
+    // delay.connect(verb);
+    // verb.connect(verbBus);
+    var mainOut = audioContext.createGain();
+    mainOut.gain.value = 0.8;
+    delay.connect(mainOut);
     
+    var verbBus = audioContext.createGain();
+    verbBus.gain.value = 0.5;
+
+    verbBus.connect(mainOut);
+    mainOut.connect(audioContext.destination);
     console.log(time + endTime);
 }
 // using for loop

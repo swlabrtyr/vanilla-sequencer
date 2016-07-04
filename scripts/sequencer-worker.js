@@ -1,9 +1,9 @@
-// Web Audio Sequencer 
+// Web Audio Sequencer
 var timerID = null;
 var interval = 100;
 
 this.addEventListener("message", function(e) {
-    if (e.data == "start") {
+    if (e.data === "start") {
 
         console.log("starting");
 
@@ -25,7 +25,7 @@ this.addEventListener("message", function(e) {
                 postMessage("tick");
             }, interval);
         }
-    } else if (e.data == "stop") {
+    } else if (e.data === "stop") {
 
         console.log("stopping");
         clearInterval(timerID);
@@ -35,4 +35,3 @@ this.addEventListener("message", function(e) {
 });
 
 postMessage('hi there');
-
