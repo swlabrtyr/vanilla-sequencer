@@ -19,8 +19,11 @@ let futureTickTime = audioContext.currentTime;
 let current16thNote = 1;
 let tempo = 120;
 let timerID, stopTime, pitch;
+let delayTime = 0;
+let delayFeedback = 0;
 
-
+console.log("Delay Time: ", delayTime);
+console.log("Delay Feedback Amount: ", delayFeedback);
 // choose oscillator waveform in HTML
 
 let waveform, waveformChoice = 0;
@@ -180,7 +183,7 @@ function createAudioNodes(pitch, start, stop) {
   let filterEnv = filterADSR(lpFilter1, 0.5, 0.1, 0.5, 0.7,
     10000, 1000, 250, 100);
 
-  let delay = delayFX(0.3, 0.5);
+  let delay = delayFX(delayTime, delayFeedback);
 
   console.log(stopTime);
   // make connections
@@ -188,7 +191,7 @@ function createAudioNodes(pitch, start, stop) {
   ampEnv.connect(filterEnv);
 
   filterEnv.connect(delay);
-
+  filterEnv.connect(output);
   // state change, connects delay to output then output to destination
   delay.connect(output);
 
@@ -201,7 +204,7 @@ function createAudioNodes(pitch, start, stop) {
   startOsc(osc, start);
   stopOsc(osc, start, stopTime);
 
-};
+}
 
 function startOsc(osc, start) {
   osc.start(start);
@@ -282,10 +285,10 @@ let initDivs = (function() {
         }, false);
       }
     }
-  }
+  };
 })();
 
-initDivs.set(divs, "lightskyblue")
+initDivs.set(divs, "lightskyblue");
 
 
 // change each div color on the 16th note beat
@@ -312,7 +315,7 @@ let nextDiv = (function() {
         countCurrentDiv = 0;
       };
     }
-  }
+  };
 })();
 
 
@@ -410,24 +413,6 @@ function selectPitch(e) {
     }
   }
 }
-//
-// function selectPitch(e) {
-//     if (e.target.id !== e.currentTarget.id) {
-//         for (var i = 0; i < pitchArray.length; i++) {
-//             for (var j = 0; j < pitchArray[i].notes.length; j++) {
-//
-//                 // noteChoice var is selected in index.html
-//                 if (pitchArray[i].ID === e.target.id &&
-//                     noteChoice === pitchArray[i].notes[j])
-//                 {
-//                     pitchArray[i].value = notePicker(noteChoice);
-//                     console.log("note choice: " +  pitchArray[i].value);
-//                 }
-//             }
-//         }
-//     }
-// }
-
 
 function notePicker(value) {
   return Math.pow(2, (value + 1 * 69 - 69) / 12) * 110;
@@ -456,11 +441,4 @@ stopBtn.addEventListener('click', () => {
   clearTimeout(timerID);
   console.log('stopping');
 }, false);
-//
-// document.getElementById('start').addEventListener('click', function() {
-//
-//   let time = audioContext.currentTime;
-//
-//   console.log(time);
-//   playNote("sawtooth", 440, time, time + 3, output);
-// });
+
