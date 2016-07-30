@@ -19,7 +19,7 @@ output.gain.value = 0.3;
 let futureTickTime = audioContext.currentTime;
 let current16thNote = 1;
 let tempo = 120;
-let timerID, stopTime, pitch, secondsPerBeat;
+let timerID, pitch, secondsPerBeat;
 let isPlaying = false;
 let delayTime = 0;
 let delayFeedback = 0;
@@ -87,13 +87,6 @@ function ampADSR(src, atkTime, decTime, susTime, relTime,
     let gain = audioContext.createGain();
 
     src.connect(gain);
-
-
-    // calculate stop time and add a padding 0.1 to prevent any
-    // oscillators from overlapping
-
-    stopTime = time + atkTime + decTime + susTime + relTime + 0.1;
-    console.log(stopTime);
 
     // set starting value
     gain.gain.setValueAtTime(0.001, time);
@@ -168,6 +161,7 @@ function createAudioNodes(pitch, start, stop) {
     } else {
         waveform = "sine";
     }
+    
     console.log(waveformChoice);
 
     /*
@@ -206,12 +200,12 @@ function createAudioNodes(pitch, start, stop) {
 
     let delay = delayFX(delayTime, delayFeedback);
     console.log(delay);
-    console.log(stopTime);
+
+
     // make connections
 
     ampEnv.connect(filterEnv);
     
-
     // wet output
     filterEnv.connect(delay);
     // dry output
@@ -238,7 +232,7 @@ function startOsc(osc, start) {
 
 function stopOsc(osc, stopTime) {
     osc.stop(stopTime);
-    console.log("Osc Stopped");
+    console.log("Osc Stopped " + stopTime);
 }
 
 /*
@@ -343,6 +337,23 @@ let nextDiv = (function() {
     };
 })();
 
+function scheduleNote(beatDivisionNumber, start, stop) {
+    console.log("Number of 16th note played: ", beatDivisionNumber);
+    for (let i = 0; i < buttonArray.length; i++) {
+        
+        if (beatDivisionNumber === buttonArray[i].ID &&
+            buttonArray[i].state === "ON") {
+
+            if (pitchArray.indexOf(pitchArray[i]) === buttonArray.indexOf(buttonArray[i])) {
+
+                pitch = pitchArray[i].value;
+                console.log("Note pitch:", pitch, "Note number", buttonArray[i]);
+            }
+            createAudioNodes(pitch, start, stop);
+        }
+    }
+}
+
 
 // schedule future ticks
 
@@ -353,32 +364,12 @@ function futureTick() {
     futureTickTime += 0.25 * secondsPerBeat; //future note
 
     current16thNote++;
-    // console.log(current16thNote);
+    console.log(current16thNote);
     
-    if (current16thNote > 32) {
-        current16thNote = 1;
+    if (current16thNote === 32) {
+        current16thNote = 0;
     }
 };
-
-function scheduleNote(beatDivisionNumber, start, stop) {
-
-    for (let i = 0; i < buttonArray.length; i++) {
-        
-        if (beatDivisionNumber === buttonArray[i].ID &&
-            buttonArray[i].state === "ON") {
-
-            console.log('test');
-
-            if (pitchArray.indexOf(pitchArray[i]) === buttonArray.indexOf(buttonArray[i])) {
-
-                pitch = pitchArray[i].value;
-                console.log(pitch);
-            }
-            
-            createAudioNodes(pitch, start, start + end);
-        }
-    }
-}
 
 function scheduler() {
 
@@ -386,9 +377,9 @@ function scheduler() {
 
     while (futureTickTime < audioContext.currentTime + 0.1) {
         isPlaying = true;
-        scheduleNote(current16thNote, futureTickTime, 0);
+        scheduleNote(current16thNote, futureTickTime, futureTickTime + 1.5);
         futureTick();
-
+        
         nextDiv.divCount(divsArray);
     }
     isPlaying = false;
@@ -425,7 +416,8 @@ function buttonToggle(e) {
 }
 
 function selectPitch(e) {
-
+    var noteSelected = notePicker(noteChoice);
+    console.log(noteSelected);
     if (e.target.id !== e.currentTarget.id) {
 
         for (let i = 0; i < pitchArray.length; i++) {
@@ -436,7 +428,7 @@ function selectPitch(e) {
                 if (pitchArray[i].ID === e.target.id &&
                     noteChoice === pitchArray[i].notes[j]) {
 
-                    pitchArray[i].value = notePicker(noteChoice);
+                    pitchArray[i].value = noteSelected;
                     console.log("note choice: " + pitchArray[i].value);
                 }
             }
@@ -445,7 +437,9 @@ function selectPitch(e) {
 }
 
 function notePicker(value) {
-    return Math.pow(2, (value + 1 * 69 - 69) / 12) * 110;
+    var notePicked = Math.pow(2, (noteChoice + 1 * 69 - 69) / 12) * 110;
+    console.log("Note selected: ", notePicked);
+    return notePicked;
 };
 
 
