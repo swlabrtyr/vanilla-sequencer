@@ -78,14 +78,34 @@ body {
   margin-top: 0.3em;
 }
 
+#delay {
+    margin:1em;
+}
+
 .delay-container {
   margin: 1em;
   width: 100%;
   position: relative;
 }
 
-#delay {
-    margin:1em;
+.ampEnv-container {
+    margin: 1em;
+    width: 100%;
+    position: flex;
+}
+
+#amp-envelope {
+    margin: 1em;
+}
+
+.filterEnv-container {
+    margin: 1em;
+    width: 100%;
+    position: flex;
+}
+
+#filter-envelope {
+    margin: 1em;
 }
 
 .slider {

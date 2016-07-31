@@ -20,9 +20,22 @@ let futureTickTime = audioContext.currentTime;
 let current16thNote = 1;
 let tempo = 120;
 let timerID, pitch, secondsPerBeat;
+
 let isPlaying = false;
+
 let delayTime = 0;
 let delayFeedback = 0;
+
+let ampAtk = 0.1;
+let ampDec = 0.1;
+let ampSus = 0.5;
+let ampRel = 1.3;
+
+let filterAtk = 0.5;
+let filterDec = 0.1;
+let filterSus = 0.5;
+let filterRel = 0.7;
+
 let end = 0.1;
 let noteChoice;
 
@@ -119,6 +132,7 @@ function filterADSR(filter, atkTime, decTime, susTime, relTime,
     filter.frequency.setValueAtTime(200, time);
     // attack
     filter.frequency.exponentialRampToValueAtTime(atkVal, time + atkTime);
+    console.log(atkTime);
     // decay
     filter.frequency.exponentialRampToValueAtTime(decVal, time + atkTime + decTime);
     // sustain
@@ -192,12 +206,18 @@ function createAudioNodes(pitch, start, stop) {
     
     let lpFilter1 = createFilter("lowpass", 2050);
 
-    let ampEnv = ampADSR(oscMix, 0.1, 0.1, 0.5, 1.3,
-                         0.7, 0.6, 0.6, 0.001);
+    // let ampEnv = ampADSR(oscMix, 0.1, 0.1, 0.5, 1.3,
+    //                      0.7, 0.6, 0.6, 0.001);
 
-    let filterEnv = filterADSR(lpFilter1, 0.5, 0.1, 0.5, 0.7,
-                               10000, 1000, 250, 100);
+    let ampEnv = ampADSR(oscMix, ampAtk, ampDec, ampSus, ampRel,
+                        0.7, 0.6, 0.6, 0.001);
 
+    // let filterEnv = filterADSR(lpFilter1, 0.5, 0.1, 0.5, 0.7,
+    //                            10000, 1000, 250, 100);
+
+    let filterEnv = filterADSR(lpFilter1, filterAtk, filterDec, filterSus, filterRel,
+                                10000, 1000, 250, 100);
+    
     let delay = delayFX(delayTime, delayFeedback);
     console.log(delay);
 
