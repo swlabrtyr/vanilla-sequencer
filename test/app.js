@@ -43,7 +43,7 @@ console.log("Delay Time: ", delayTime);
 console.log("Delay Feedback Amount: ", delayFeedback);
 
 // choose oscillator waveform in HTML
-let waveform, waveformChoice = 0;
+let osc1waveform, osc2waveform, osc2waveformChoice, osc1waveformChoice = 0;
 
 /*
 
@@ -168,15 +168,22 @@ function delayFX(delayAmount, fbAmount) {
 
 function createAudioNodes(pitch, start, stop) {
 
-    if (waveformChoice === 0) {
-        waveform = "square";
-    } else if (waveformChoice === 1) {
-        waveform = "sawtooth";
+    if (osc1waveformChoice === 0) {
+        osc1waveform = "square";
+    } else if (osc1waveformChoice === 1) {
+        osc1waveform = "sawtooth";
     } else {
-        waveform = "sine";
+        osc1waveform = "sine";
+    }
+    if (osc2waveformChoice === 0) {
+        osc2waveform = "square";
+    } else if (osc2waveformChoice === 1) {
+        osc2waveform = "sawtooth";
+    } else {
+        osc2waveform = "sine";
     }
     
-    console.log(waveformChoice);
+    console.log(osc1waveformChoice);
 
     /*
 
@@ -187,12 +194,12 @@ function createAudioNodes(pitch, start, stop) {
     // let osc = createOsc(waveform);
     // osc.frequency.value = pitch;
 
-    let osc1 = createOsc(waveform);
+    let osc1 = createOsc(osc1waveform);
 
     osc1.frequency.value = pitch;
     osc1.detune.value = 9;
 
-    let osc2 = createOsc(waveform);
+    let osc2 = createOsc(osc2waveform);
 
     osc2.frequency.value = pitch;
     osc2.detune.value = 16;
@@ -397,7 +404,7 @@ function scheduler() {
 
     while (futureTickTime < audioContext.currentTime + 0.1) {
         isPlaying = true;
-        scheduleNote(current16thNote, futureTickTime, futureTickTime + 1.5);
+        scheduleNote(current16thNote, futureTickTime, futureTickTime + 3.0);
         futureTick();
         
         nextDiv.divCount(divsArray);

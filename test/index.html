@@ -4,9 +4,10 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width user-scalable=no">
-    <title>Sequencer</title>
+    <title>Sequencizer</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.blue_grey-indigo.min.css" />
+    <!-- <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.blue_grey-indigo.min.css" /> -->
+    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.blue_grey-cyan.min.css" />
     <!-- <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.blue_grey-light_blue.min.css"> -->
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.13.1/lodash.min.js"></script>
@@ -27,8 +28,14 @@
           <input class="slider mdl-slider mdl-js-slider" id="bpm" type="range" min="30.0" max="160.0" step="1" value="120" onInput="tempo = event.target.value; document.getElementById('showTempo').innerText=tempo;">
         </p>
       </div>
-      <div id="waveform-select">Waveform:
-        <select class="styled-select slate" onchange="waveformChoice = this.selectedIndex">
+      <div class="waveform-select">Oscillator 1 Waveform:
+        <select class="styled-select slate" onchange="osc1waveformChoice = this.selectedIndex">
+          <option>Square
+          <option>Sawtooth
+          <option>Sine</select>
+      </div>
+      <div class="waveform-select">Oscillator 2 Waveform:
+        <select class="styled-select slate" onchange="osc2waveformChoice = this.selectedIndex">
           <option>Square
           <option>Sawtooth
           <option>Sine</select>
@@ -592,52 +599,55 @@
       </div>
     </div>
     
-    <span id="delay">Delay</span>
-    <!-- <input class="slider mdl-slider mdl-js-slider" id="bpm" type="range" min="30.0" max="160.0" step="1" value="120"> -->
-    <div class="delay-container">
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="delay-t" type="range" min="0.0" max="3.0" step="0.01" value="0.0" onInput="delayTime = event.target.value;">
-      </p>
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="fb-amnt" type="range" min="0" max="0.9" step="0.01" value="0.0" onInput="delayFeedback = event.target.value;">
-      </p>
-    </div>
-    
-    <span id="amp-envelope">Amplitude Envelope</span>
-    <div class="ampEnv-container">
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="amp-atk" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="ampAtk = Number(event.target.value);">
-      </p>
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="amp-dec" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="ampDec = Number(event.target.value);">
-      </p>
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="amp-sus" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="ampSus = Number(event.target.value);">
-      </p>
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="amp-rel" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="ampRel = Number(event.target.value);">
-      </p>
-    </div>
+    <div id="slider-ctrl">    
+      <span id="delay">Delay</span>
+      <!-- <input class="slider mdl-slider mdl-js-slider" id="bpm" type="range" min="30.0" max="160.0" step="1" value="120"> -->
+      <div class="delay-container">
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="delay-t" type="range" min="0.0" max="3.0" step="0.01" value="0.0" onInput="delayTime = Number(event.target.value);">
+        </p>
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="fb-amnt" type="range" min="0" max="0.9" step="0.01" value="0.0" onInput="delayFeedback = Number(event.target.value);">
+        </p>
+      </div>
+      
+      <span id="amp-envelope">Amplitude Envelope</span>
+      <div class="ampEnv-container">
+        <!-- <span id="delay">Attack</span> -->
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="amp-atk" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="ampAtk = Number(event.target.value);">
+        </p>
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="amp-dec" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="ampDec = Number(event.target.value);">
+        </p>
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="amp-sus" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="ampSus = Number(event.target.value);">
+        </p>
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="amp-rel" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="ampRel = Number(event.target.value);">
+        </p>
+      </div>
 
-    <span id="filter-envelope">Filter Envelope</span>
-    <div class="filterEnv-container">
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="amp-atk" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="filterAtk = Number(event.target.value);">
-      </p>
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="amp-dec" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="filterDec = Number(event.target.value);">
-      </p>
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="amp-sus" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="filterSus = Number(event.target.value);">
-      </p>
-      <p style="width:20em">
-        <input class="slider mdl-slider mdl-js-slider" id="amp-rel" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="filterRel = Number(event.target.value);">
-      </p>
+      <span id="filter-envelope">Filter Envelope</span>
+      <div class="filterEnv-container">
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="amp-atk" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="filterAtk = Number(event.target.value);">
+        </p>
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="amp-dec" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="filterDec = Number(event.target.value);">
+        </p>
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="amp-sus" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="filterSus = Number(event.target.value);">
+        </p>
+        <p style="width:20em">
+          <input class="slider mdl-slider mdl-js-slider" id="amp-rel" type="range" min="0" max="2.9" step="0.01" value="0.0" onInput="filterRel = Number(event.target.value);">
+        </p>
+      </div>
     </div>
-
     <!-- <script src="http://cwilso.github.io/AudioContext-MonkeyPatch/AudioContextMonkeyPatch.js"></script> -->
 
     <script src="app.js"></script>
   </body>
 
 </html>
+
