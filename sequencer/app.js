@@ -1,8 +1,12 @@
 /*
+ *
+ *
  Web Audio synthesizer and sequencer. Buttons and pitches are scheduled
  using look-up tables and an event loop that listens for ntoes to
  be scheduled.
- */
+*
+*
+*/
 
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -30,6 +34,7 @@ let ampAtk = 0.1;
 let ampDec = 0.1;
 let ampSus = 0.5;
 let ampRel = 1.3;
+let killOscTime = 0.0;
 
 let filterAtk = 0.5;
 let filterDec = 0.1;
@@ -113,7 +118,9 @@ function ampADSR(src, atkTime, decTime, susTime, relTime,
     gain.gain.exponentialRampToValueAtTime(relVal, time + atkTime + decTime +
                                            susTime + relTime);
 
-    // console.log(gain);
+    killOscTime = ampAtk + ampDec + ampSus + ampRel + 0.1;
+    
+    console.log("kill osc time: ", killOscTime);
     return gain;
 }
 
@@ -404,11 +411,13 @@ function scheduler() {
 
     while (futureTickTime < audioContext.currentTime + 0.1) {
         isPlaying = true;
-        scheduleNote(current16thNote, futureTickTime, futureTickTime + 5.0);
+        console.log("kill time in while loop", killOscTime);
+        scheduleNote(current16thNote, futureTickTime, futureTickTime + killOscTime);
         futureTick();
         
         nextDiv.divCount(divsArray);
     }
+    
     isPlaying = false;
     timerID = window.setTimeout(scheduler, 25.0);
 };
