@@ -54,7 +54,7 @@ let osc1waveform, osc2waveform, osc2waveformChoice, osc1waveformChoice = 0;
 const startBtn = document.getElementById("play-button");
 const stopBtn = document.getElementById("stop-button");
 const bpm = document.getElementById('bpm');
-let divs = document.querySelectorAll('.box');
+let divs = document.querySelectorAll('.svg-box');
 
 bpm.oninput = function() {
 
@@ -182,7 +182,7 @@ function createAudioNodes(pitch, start, stop) {
     } else {
         osc2waveform = "sine";
     }
-    
+
     console.log(osc1waveformChoice);
 
     /*
@@ -210,7 +210,7 @@ function createAudioNodes(pitch, start, stop) {
 
     osc1.connect(oscMix);
     osc2.connect(oscMix);
-    
+
     let lpFilter1 = createFilter("lowpass", 2050);
 
     // let ampEnv = ampADSR(oscMix, 0.1, 0.1, 0.5, 1.3,
@@ -224,7 +224,7 @@ function createAudioNodes(pitch, start, stop) {
 
     let filterEnv = filterADSR(lpFilter1, filterAtk, filterDec, filterSus, filterRel,
                                 10000, 1000, 250, 100);
-    
+
     let delay = delayFX(delayTime, delayFeedback);
     console.log(delay);
 
@@ -232,7 +232,7 @@ function createAudioNodes(pitch, start, stop) {
     // make connections
 
     ampEnv.connect(filterEnv);
-    
+
     // wet output
     filterEnv.connect(delay);
     // dry output
@@ -302,7 +302,8 @@ let initDivs = (function() {
 
             for (let i = 0; i < array.length; i++) {
 
-                array[i].style.backgroundColor = "#2E9AFE";
+                // array[i].style.backgroundColor = "#2E9AFE";
+                array[i].style.backgroundColor = "";
 
 
                 // change the color of the selected div
@@ -310,7 +311,8 @@ let initDivs = (function() {
                 array[i].addEventListener('click', function() {
 
                     let currColor = this.style.backgroundColor;
-                    let darkblue = this.style.backgroundColor = "#2E9AFE";
+                    // let darkblue = this.style.backgroundColor = "#2E9AFE";
+                    let darkblue = this.style.backgroundColor = "";
                     let otherColors = this.style.backgroundColor = color;
 
                     console.log(this);
@@ -326,7 +328,8 @@ let initDivs = (function() {
                         break;
 
                     case otherColors:
-                        this.style.backgroundColor = "#2E9AFE";
+                        // this.style.backgroundColor = "#2E9AFE";
+                        this.style.backgroundColor = "";
                     }
                 }, false);
             }
@@ -334,7 +337,8 @@ let initDivs = (function() {
     };
 })();
 
-initDivs.set(divs, "lightskyblue");
+// initDivs.set(divs, "lightskyblue");
+initDivs.set(divs, "");
 
 
 // change each div color on the 16th note beat
@@ -355,8 +359,9 @@ let nextDiv = (function() {
 
             currentDiv.style.borderRadius = "1000px";
             notCurrentDiv.style.borderRadius = "25px";
-
+        
             if (countCurrentDiv > 31) {
+
                 countOtherDiv = -1;
                 countCurrentDiv = 0;
             };
@@ -367,7 +372,7 @@ let nextDiv = (function() {
 function scheduleNote(beatDivisionNumber, start, stop) {
     console.log("Number of 16th note played: ", beatDivisionNumber);
     for (let i = 0; i < buttonArray.length; i++) {
-        
+
         if (beatDivisionNumber === buttonArray[i].ID &&
             buttonArray[i].state === "ON") {
 
@@ -387,12 +392,12 @@ function scheduleNote(beatDivisionNumber, start, stop) {
 function futureTick() {
 
     secondsPerBeat = 60.0 / tempo;
-    
+
     futureTickTime += 0.25 * secondsPerBeat; //future note
 
     current16thNote++;
     console.log(current16thNote);
-    
+
     if (current16thNote === 32) {
         current16thNote = 0;
     }
@@ -404,15 +409,24 @@ function scheduler() {
 
     while (futureTickTime < audioContext.currentTime + 0.1) {
         isPlaying = true;
-        scheduleNote(current16thNote, futureTickTime, futureTickTime + 3.0);
+        scheduleNote(current16thNote, futureTickTime, futureTickTime + 5.0);
         futureTick();
-        
+
         nextDiv.divCount(divsArray);
+
     }
     isPlaying = false;
     timerID = window.setTimeout(scheduler, 25.0);
 };
 
+//svg
+// var circle = document.getElementById('mycircle');
+// circle.addEventListener('click', () => {
+//     circle.style.r = "30";
+// });
+// circle.removeEventListener('click', () => {
+//     circle.style.r = "150";
+// });
 
 function buttonToggle(e) {
 
@@ -494,10 +508,7 @@ startBtn.addEventListener('click', () => {
 
 stopBtn.addEventListener('click', () => {
     clearTimeout(timerID);
-    
+
     console.log('stopping');
 
 }, false);
-
-
-
