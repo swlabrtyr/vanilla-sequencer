@@ -449,7 +449,7 @@ function buttonToggle(e) {
 
 function selectPitch(e) {
     var noteSelected = notePicker(noteChoice);
-    // console.log(noteSelected);
+    console.log(noteSelected);
     if (e.target.id !== e.currentTarget.id) {
 
         for (let i = 0; i < pitchArray.length; i++) {
@@ -461,7 +461,7 @@ function selectPitch(e) {
                     noteChoice === pitchArray[i].notes[j]) {
 
                     pitchArray[i].value = noteSelected;
-                    // console.log("note choice: " + pitchArray[i].value);
+                    console.log("note choice: " + pitchArray[i].value);
                 }
             }
         }
@@ -480,13 +480,13 @@ function notePicker(value) {
 let btnContainers = document.querySelectorAll(".button-container");
 
 for (let i = 0; i < btnContainers.length; i++) {
-    btnContainers[i].addEventListener("click", buttonToggle);
+    btnContainers[i].addEventListener("mouseup", buttonToggle);
 }
 
 let pitchSelectors = document.querySelectorAll(".pitch-select-container");
 
 for (let i = 0; i < pitchSelectors.length; i++) {
-    pitchSelectors[i].addEventListener("click", selectPitch);
+    pitchSelectors[i].addEventListener("change", selectPitch);
 }
 
 // show tempo number (secondsPerBeat)
