@@ -5,38 +5,38 @@ body {
     color: #21263a;
 }
 
+#main-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 1em;
+}
+
 #controls {
-    display: flex;;
+    display: flex;
     position: relative;
     margin: 1em;
     margin-bottom: 0.5em;
     justify-content: center;
 }
 
-.tempo {
+#tempo {
     display: flex;
-    margin-top: 1em;
-    margin: 2em;
-}
-
-#timer {
-    /* background-color: blue; */
-    height: 20px;
-    width: 20px;
+    /* margin-top: 1em; */
+    margin: 1em;
 }
 
 #bpm {
     display: block;
     position: relative;
-    float: left;
+    width: 20em;
     flex-wrap: wrap;
-    /* justify-content: center; */
     margin: 2em;
     right: 1em;
 }
 
 #showTempo {
-    margin: 1em;
+    /* margin: 1em; */
 }
 
 .waveform {
