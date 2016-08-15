@@ -9,12 +9,14 @@ body {
     display: flex;;
     position: relative;
     margin: 1em;
+    margin-bottom: 0.5em;
     justify-content: center;
 }
 
 .tempo {
     display: block;
     margin-top: 1em;
+    margin: 2em;
 }
 
 #timer {
@@ -25,7 +27,8 @@ body {
 
 #bpm {
     position: relative;
-    float: left;
+    /* float: left; */
+    margin: 2em;
     right: 1em;
 }
 
@@ -81,10 +84,11 @@ body {
     margin-top: 0.3em;
 }
 
-.slider-ctrl {
+#slider-ctrl {
     display: flex;
-    justify-content: center;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
 }
 
 #delay {
@@ -95,15 +99,19 @@ body {
 .delay-container {
     display: flex;
     margin: 1em;
+    flex-wrap: wrap;
+    justify-content: center;
     width: 100%;
-    position: relative;
+    /* position: relative; */
 }
 
 .ampEnv-container {
     display: flex;
     margin: 1em;
+    flex-wrap: wrap;
+    justify-content: center;
     width: 100%;
-    position: relative;
+    /* position: relative; */
 }
 
 #amp-envelope {
@@ -114,17 +122,18 @@ body {
 .filterEnv-container {
     display: flex;
     margin: 1em;
+    justify-content: center;
     width: 100%;
-    position: relative;
+    /* position: relative; */
 }
 
 #filter-envelope {
-    display:flex;
+    display: flex;
     margin: 1em;
 }
 
 .slider {
-    width: 20em;
+    width: 10em;
 }
 
 /* .jelly-container { */
