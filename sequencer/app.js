@@ -20,6 +20,7 @@ const destination = audioContext.destination;
 const output = audioContext.createGain();
 output.gain.value = 0.3;
 
+let playing = false;
 let futureTickTime = audioContext.currentTime;
 let current16thNote = 1;
 let tempo = 120;
@@ -306,16 +307,13 @@ let initDivs = (function() {
                 array[i].addEventListener('click', function() {
 
                     let currColor = this.style.backgroundColor;
-                    // let darkblue = this.style.backgroundColor = "#2E9AFE";
                     let otherColors = this.style.backgroundColor = color;
+                    
+                    switch (currColor) {
 
-
-                    // idk why this switch is here...
-                    // switch (currColor) {
-
-                    // case otherColors:
-                    //     // this.style.backgroundColor = "#2E9AFE";
-                    // }
+                    case otherColors:
+                        this.style.backgroundColor = "";
+                    }
                     
                 }, false);
             }
@@ -389,8 +387,9 @@ function futureTick() {
 
 };
 
-function scheduler() {
 
+function scheduler() {
+    
     // sequencer loop
 
     while (futureTickTime < audioContext.currentTime + 0.1) {
@@ -400,15 +399,13 @@ function scheduler() {
         if (current16thNote === 32) {
             current16thNote = 0;
         }
-        
-        
-        scheduleNote(current16thNote, futureTickTime, futureTickTime + killOscTime);
 
+        scheduleNote(current16thNote, futureTickTime, futureTickTime + killOscTime);
+        
         futureTick();
 
-        nextDiv.divCount(divsArray);
+        nextDiv.divCount(divsArray);        
     }
-
 
     timerID = window.setTimeout(scheduler, 25.0);
 };
@@ -427,24 +424,20 @@ function buttonToggle(e) {
 
                 buttonArray[i].state = "ON";
 
-                // console.log(buttonArray[i].ID + "\n" +
-                //             buttonArray[i].state);
 
             } else if (target === buttonArray[i].ID &&
                 buttonArray[i].state === "ON") {
 
                 buttonArray[i].state = "OFF";
-
-                // console.log(buttonArray[i].ID + "\n" +
-                //             buttonArray[i].state);
             }
         }
     }
 }
 
 function selectPitch(e) {
+
     var noteSelected = notePicker(noteChoice);
-    console.log(noteSelected);
+
     if (e.target.id !== e.currentTarget.id) {
 
         for (let i = 0; i < pitchArray.length; i++) {
@@ -490,8 +483,10 @@ for (let i = 0; i < pitchSelectors.length; i++) {
 
 startBtn.addEventListener('click', () => {
 
+    futureTickTime = audioContext.currentTime;
+    
     scheduler();
-
+    
 }, false);
 
 stopBtn.addEventListener('click', () => {
@@ -501,7 +496,6 @@ stopBtn.addEventListener('click', () => {
     console.log('stopping');
 
 }, false);
-
 
 
 
