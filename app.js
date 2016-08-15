@@ -2,16 +2,16 @@
  *
  *
  Web Audio synthesizer and sequencer. Buttons and pitches are scheduled
- using look-up tables and an event loop that listens for ntoes to
+ using look-up tables and an event loop that listens for notes to
  be scheduled.
-*
-*
-*/
+ *
+ *
+ */
 
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-const audioContext = new AudioContext;
+let audioContext = new AudioContext;
 const destination = audioContext.destination;
 
 
@@ -20,9 +20,11 @@ const destination = audioContext.destination;
 const output = audioContext.createGain();
 output.gain.value = 0.3;
 
+let playing = false;
 let futureTickTime = audioContext.currentTime;
 let current16thNote = 1;
 let tempo = 120;
+let isPlaying = false;
 let timerID, pitch, secondsPerBeat;
 
 let delayTime = 0;
@@ -97,7 +99,7 @@ function createFilter(type, freq) {
 };
 
 function ampADSR(src, atkTime, decTime, susTime, relTime,
-                 atkVal, decVal, susVal, relVal) {
+    atkVal, decVal, susVal, relVal) {
 
     let time = audioContext.currentTime;
     let gain = audioContext.createGain();
@@ -114,16 +116,16 @@ function ampADSR(src, atkTime, decTime, susTime, relTime,
     gain.gain.exponentialRampToValueAtTime(susVal, time + atkTime + decTime + susTime);
     // release
     gain.gain.exponentialRampToValueAtTime(relVal, time + atkTime + decTime +
-                                           susTime + relTime);
+        susTime + relTime);
 
     killOscTime = ampAtk + ampDec + ampSus + ampRel + 0.1;
-    
+
     // console.log("kill osc time: ", killOscTime);
     return gain;
 }
 
 function filterADSR(filter, atkTime, decTime, susTime, relTime,
-                    atkVal, decVal, susVal, relVal) {
+    atkVal, decVal, susVal, relVal) {
 
     let time = audioContext.currentTime;
 
@@ -144,7 +146,7 @@ function filterADSR(filter, atkTime, decTime, susTime, relTime,
     filter.frequency.exponentialRampToValueAtTime(susVal, time + atkTime + decTime + susTime);
     // release
     filter.frequency.exponentialRampToValueAtTime(relVal, time + atkTime + decTime +
-                                                  susTime + relTime + stopTime);
+        susTime + relTime + stopTime);
 
     return filter;
 }
@@ -180,6 +182,7 @@ function createAudioNodes(pitch, start, stop) {
     } else {
         osc1waveform = "sine";
     }
+
     if (osc2waveformChoice === 0) {
         osc2waveform = "square";
     } else if (osc2waveformChoice === 1) {
@@ -187,8 +190,7 @@ function createAudioNodes(pitch, start, stop) {
     } else {
         osc2waveform = "sine";
     }
-    
-    // console.log(osc1waveformChoice);
+
 
     /*
 
@@ -196,8 +198,6 @@ function createAudioNodes(pitch, start, stop) {
 
      */
 
-    // let osc = createOsc(waveform);
-    // osc.frequency.value = pitch;
 
     let osc1 = createOsc(osc1waveform);
 
@@ -215,35 +215,27 @@ function createAudioNodes(pitch, start, stop) {
 
     osc1.connect(oscMix);
     osc2.connect(oscMix);
-    
+
     let lpFilter1 = createFilter("lowpass", 2050);
 
-    // let ampEnv = ampADSR(oscMix, 0.1, 0.1, 0.5, 1.3,
-    //                      0.7, 0.6, 0.6, 0.001);
-
     let ampEnv = ampADSR(oscMix, ampAtk, ampDec, ampSus, ampRel,
-                        0.7, 0.6, 0.6, 0.001);
-
-    // let filterEnv = filterADSR(lpFilter1, 0.5, 0.1, 0.5, 0.7,
-    //                            10000, 1000, 250, 100);
+        0.7, 0.6, 0.6, 0.001);
 
     let filterEnv = filterADSR(lpFilter1, filterAtk, filterDec, filterSus, filterRel,
-                                10000, 1000, 250, 100);
-    
+        10000, 1000, 250, 100);
+
     let delay = delayFX(delayTime, delayFeedback);
-    // console.log(delay);
 
 
     // make connections
 
     ampEnv.connect(filterEnv);
-    
+
     // wet output
     filterEnv.connect(delay);
+    delay.connect(output);
     // dry output
     filterEnv.connect(output);
-
-    delay.connect(output);
 
     output.connect(destination);
 
@@ -252,6 +244,7 @@ function createAudioNodes(pitch, start, stop) {
 
     startOsc(osc1, start);
     startOsc(osc2, start);
+
     stopOsc(osc2, stop);
     stopOsc(osc1, stop);
 }
@@ -264,7 +257,6 @@ function startOsc(osc, start) {
 
 function stopOsc(osc, stopTime) {
     osc.stop(stopTime);
-    // console.log("Osc Stopped " + stopTime);
 }
 
 /*
@@ -307,38 +299,29 @@ let initDivs = (function() {
 
             for (let i = 0; i < array.length; i++) {
 
-                array[i].style.backgroundColor = "#2E9AFE";
+                // array[i].style.backgroundColor = "";
 
-
+                array[i].style.borderRadius = "100px";
                 // change the color of the selected div
 
                 array[i].addEventListener('click', function() {
 
                     let currColor = this.style.backgroundColor;
-                    let darkblue = this.style.backgroundColor = "#2E9AFE";
                     let otherColors = this.style.backgroundColor = color;
-
-
-
-                    // div color toggle
-
+                    
                     switch (currColor) {
 
-                    case darkblue:
-                        this.style.backgroundColor = color;
-
-                        break;
-
                     case otherColors:
-                        this.style.backgroundColor = "#2E9AFE";
+                        this.style.backgroundColor = "";
                     }
+                    
                 }, false);
             }
         }
     };
 })();
 
-initDivs.set(divs, "lightskyblue");
+initDivs.set(divs, "pink");
 
 
 // change each div color on the 16th note beat
@@ -357,8 +340,11 @@ let nextDiv = (function() {
             notCurrentDiv = array[++countOtherDiv % array.length];
             currentDiv = array[++countCurrentDiv % array.length];
 
-            currentDiv.style.borderRadius = "1000px";
-            notCurrentDiv.style.borderRadius = "25px";
+
+            // move sequencer 
+            currentDiv.style.borderRadius = "2px";
+            notCurrentDiv.style.borderRadius = "100px";
+            
 
             if (countCurrentDiv > 31) {
                 countOtherDiv = -1;
@@ -371,16 +357,20 @@ let nextDiv = (function() {
 function scheduleNote(beatDivisionNumber, start, stop) {
 
     for (let i = 0; i < buttonArray.length; i++) {
+
+        // check button state
         
         if (beatDivisionNumber === buttonArray[i].ID &&
             buttonArray[i].state === "ON") {
 
+            // check pitchArray state
+            
             if (pitchArray.indexOf(pitchArray[i]) === buttonArray.indexOf(buttonArray[i])) {
 
                 pitch = pitchArray[i].value;
 
             }
-            
+
             createAudioNodes(pitch, start, stop);
         }
     }
@@ -392,29 +382,31 @@ function scheduleNote(beatDivisionNumber, start, stop) {
 function futureTick() {
 
     secondsPerBeat = 60.0 / tempo;
-    
+
     futureTickTime += 0.25 * secondsPerBeat; // future note
-    
+
 };
 
-function scheduler() {
 
+function scheduler() {
+    
     // sequencer loop
 
     while (futureTickTime < audioContext.currentTime + 0.1) {
+
         current16thNote++;
-        
+
         if (current16thNote === 32) {
             current16thNote = 0;
         }
 
         scheduleNote(current16thNote, futureTickTime, futureTickTime + killOscTime);
-        futureTick();
         
-        nextDiv.divCount(divsArray);
+        futureTick();
+
+        nextDiv.divCount(divsArray);        
     }
 
-    
     timerID = window.setTimeout(scheduler, 25.0);
 };
 
@@ -427,29 +419,25 @@ function buttonToggle(e) {
 
         for (let i = 0; i < buttonArray.length; i++) {
 
-            if (target === buttonArray[i].ID
-                && buttonArray[i].state === "OFF") {
+            if (target === buttonArray[i].ID &&
+                buttonArray[i].state === "OFF") {
 
                 buttonArray[i].state = "ON";
 
-                // console.log(buttonArray[i].ID + "\n" +
-                //             buttonArray[i].state);
 
-            } else if (target === buttonArray[i].ID
-                       && buttonArray[i].state === "ON") {
+            } else if (target === buttonArray[i].ID &&
+                buttonArray[i].state === "ON") {
 
                 buttonArray[i].state = "OFF";
-
-                // console.log(buttonArray[i].ID + "\n" +
-                //             buttonArray[i].state);
             }
         }
     }
 }
 
 function selectPitch(e) {
+
     var noteSelected = notePicker(noteChoice);
-    console.log(noteSelected);
+
     if (e.target.id !== e.currentTarget.id) {
 
         for (let i = 0; i < pitchArray.length; i++) {
@@ -469,6 +457,7 @@ function selectPitch(e) {
 }
 
 function notePicker(value) {
+
     var notePicked = Math.pow(2, (noteChoice + 1 * 69 - 69) / 12) * 110;
 
     return notePicked;
@@ -493,17 +482,20 @@ for (let i = 0; i < pitchSelectors.length; i++) {
 // document.getElementById('showTempo').innerHTML = bpm;
 
 startBtn.addEventListener('click', () => {
-    scheduler();
 
+    futureTickTime = audioContext.currentTime;
+    
+    scheduler();
+    
 }, false);
 
 stopBtn.addEventListener('click', () => {
+
     clearTimeout(timerID);
-    
+
     console.log('stopping');
 
 }, false);
-
 
 
 
