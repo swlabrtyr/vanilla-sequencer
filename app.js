@@ -27,25 +27,52 @@ let tempo = 120;
 let isPlaying = false;
 let timerID, pitch, secondsPerBeat;
 
-let delayTime = 0;
+// event handling for slider inputs
+let delayTimeAmnt = 0;
 let delayFeedback = 0;
-
-let ampAtk = 0.1;
+let ampAtk = 0.3;
 let ampDec = 0.1;
 let ampSus = 0.5;
 let ampRel = 1.3;
-let killOscTime = 0.0;
-
 let filterAtk = 0.5;
 let filterDec = 0.1;
 let filterSus = 0.5;
 let filterRel = 0.7;
 
-let end = 0.1;
-let noteChoice;
+let delayTimeInput = document.getElementById("delay-t"),
+    delayFBInput   = document.getElementById("fb-amnt"),
+    ampAttack      = document.getElementById("amp-atk"),
+    ampDecay       = document.getElementById("amp-dec"),
+    ampSustain     = document.getElementById("amp-sus"),
+    ampRelease     = document.getElementById("amp-rel"),
+    filterAttack   = document.getElementById("filter-atk"),
+    filterDecay    = document.getElementById("filter-dec"),
+    filterSustain  = document.getElementById("filter-sus"),
+    filterRelease  = document.getElementById("filter-rel");
 
-// console.log("Delay Time: ", delayTime);
-// console.log("Delay Feedback Amount: ", delayFeedback);
+function inputEL(el, val) {
+    console.log(el);
+    el.addEventListener("input", () => {
+        console.log(el.id, el.value);
+        val = el.value;
+    });
+}
+
+inputEL(delayTimeInput, delayTimeAmnt);
+inputEL(delayFBInput, delayFeedback);
+inputEL(delayFBInput, delayFeedback);
+inputEL(ampAttack, ampAtk);
+inputEL(ampDecay, ampDec);
+inputEL(ampSustain, ampSus);
+inputEL(ampRelease, ampRel);
+inputEL(filterAttack, filterAtk);
+inputEL(filterDecay, filterDec);
+inputEL(filterSustain, filterSus);
+inputEL(filterRelease, filterRel);
+
+let end = 0.1;
+let killOscTime = 0.0;
+let noteChoice;
 
 // choose oscillator waveform in HTML
 let osc1waveform, osc2waveform, osc2waveformChoice, osc1waveformChoice = 0;
@@ -224,7 +251,7 @@ function createAudioNodes(pitch, start, stop) {
     let filterEnv = filterADSR(lpFilter1, filterAtk, filterDec, filterSus, filterRel,
         10000, 1000, 250, 100);
 
-    let delay = delayFX(delayTime, delayFeedback);
+    let delay = delayFX(delayTimeAmnt, delayFeedback);
 
 
     // make connections
