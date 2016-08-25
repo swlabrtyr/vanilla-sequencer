@@ -26,8 +26,17 @@ let current16thNote = 1;
 let tempo = 120;
 let isPlaying = false;
 let timerID, pitch, secondsPerBeat;
+let noteChoice;
+let end = 0.1;
+let killOscTime = 0.0;
 
-// event handling for slider inputs
+
+/*
+
+ controllers
+
+ */
+
 let delayTimeAmnt = 0;
 let delayFeedback = 0;
 let ampAtk = 0.3;
@@ -38,6 +47,8 @@ let filterAtk = 0.5;
 let filterDec = 0.1;
 let filterSus = 0.5;
 let filterRel = 0.7;
+
+// event handling for slider inputs
 
 let delayTimeInput = document.getElementById("delay-t"),
     delayFBInput   = document.getElementById("fb-amnt"),
@@ -70,19 +81,9 @@ inputEL(filterDecay, filterDec);
 inputEL(filterSustain, filterSus);
 inputEL(filterRelease, filterRel);
 
-let end = 0.1;
-let killOscTime = 0.0;
-let noteChoice;
-
 // choose oscillator waveform in HTML
+
 let osc1waveform, osc2waveform, osc2waveformChoice, osc1waveformChoice = 0;
-
-/*
-
- controllers
-
- */
-
 const startBtn = document.getElementById("play-button");
 const stopBtn = document.getElementById("stop-button");
 const bpm = document.getElementById('bpm');
@@ -107,6 +108,13 @@ bpm.oninput = function() {
 
 let divsArray = Array.prototype.slice.call(divs);
 
+
+/*
+
+ Setup Audio Nodes
+ 
+ */
+
 function createOsc(type) {
 
     let osc = audioContext.createOscillator();
@@ -126,7 +134,7 @@ function createFilter(type, freq) {
 };
 
 function ampADSR(src, atkTime, decTime, susTime, relTime,
-    atkVal, decVal, susVal, relVal) {
+                 atkVal, decVal, susVal, relVal) {
 
     let time = audioContext.currentTime;
     let gain = audioContext.createGain();
@@ -143,7 +151,7 @@ function ampADSR(src, atkTime, decTime, susTime, relTime,
     gain.gain.exponentialRampToValueAtTime(susVal, time + atkTime + decTime + susTime);
     // release
     gain.gain.exponentialRampToValueAtTime(relVal, time + atkTime + decTime +
-        susTime + relTime);
+                                           susTime + relTime);
 
     killOscTime = ampAtk + ampDec + ampSus + ampRel + 0.1;
 
@@ -152,7 +160,7 @@ function ampADSR(src, atkTime, decTime, susTime, relTime,
 }
 
 function filterADSR(filter, atkTime, decTime, susTime, relTime,
-    atkVal, decVal, susVal, relVal) {
+                    atkVal, decVal, susVal, relVal) {
 
     let time = audioContext.currentTime;
 
@@ -166,14 +174,13 @@ function filterADSR(filter, atkTime, decTime, susTime, relTime,
     filter.frequency.setValueAtTime(200, time);
     // attack
     filter.frequency.exponentialRampToValueAtTime(atkVal, time + atkTime);
-    // console.log(atkTime);
     // decay
     filter.frequency.exponentialRampToValueAtTime(decVal, time + atkTime + decTime);
     // sustain
     filter.frequency.exponentialRampToValueAtTime(susVal, time + atkTime + decTime + susTime);
     // release
     filter.frequency.exponentialRampToValueAtTime(relVal, time + atkTime + decTime +
-        susTime + relTime + stopTime);
+                                                  susTime + relTime + stopTime);
 
     return filter;
 }
@@ -246,10 +253,10 @@ function createAudioNodes(pitch, start, stop) {
     let lpFilter1 = createFilter("lowpass", 2050);
 
     let ampEnv = ampADSR(oscMix, ampAtk, ampDec, ampSus, ampRel,
-        0.7, 0.6, 0.6, 0.001);
+                         0.7, 0.6, 0.6, 0.001);
 
     let filterEnv = filterADSR(lpFilter1, filterAtk, filterDec, filterSus, filterRel,
-        10000, 1000, 250, 100);
+                               10000, 1000, 250, 100);
 
     let delay = delayFX(delayTimeAmnt, delayFeedback);
 
@@ -453,7 +460,7 @@ function buttonToggle(e) {
 
 
             } else if (target === buttonArray[i].ID &&
-                buttonArray[i].state === "ON") {
+                       buttonArray[i].state === "ON") {
 
                 buttonArray[i].state = "OFF";
             }
