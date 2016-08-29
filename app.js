@@ -37,19 +37,30 @@ let killOscTime = 0.0;
 
  */
 
-let delayTimeAmnt = 0;
-let delayFeedback = 0;
-let ampAtk = 0.3;
-let ampDec = 0.1;
-let ampSus = 0.5;
-let ampRel = 1.3;
-let filterAtk = 0.5;
-let filterDec = 0.1;
-let filterSus = 0.5;
-let filterRel = 0.7;
+// let delayTimeAmnt = 0;
+// let delayFeedback = 0;
+// let ampAtk = 0.3;
+// let ampDec = 0.1;
+// let ampSus = 0.5;
+// let ampRel = 1.3;
+// let filterAtk = 0.5;
+// let filterDec = 0.1;
+// let filterSus = 0.5;
+// let filterRel = 0.7;
+
+let delayTimeAmnt;
+let delayFeedback;
+let ampAtk;
+let ampDec;
+let ampSus;
+let ampRel;
+let filterAtk;
+let filterDec;
+let filterSus;
+let filterRel;
 
 // event handling for slider inputs
-
+// not working 
 let delayTimeInput = document.getElementById("delay-t"),
     delayFBInput   = document.getElementById("fb-amnt"),
     ampAttack      = document.getElementById("amp-atk"),
@@ -63,7 +74,8 @@ let delayTimeInput = document.getElementById("delay-t"),
 
 function inputEL(el, val) {
     el.addEventListener("input", () => {
-        val = el.value;
+        el.value = parseFloat(el.value);
+        console.log(el, el.value);
     });
 }
 
