@@ -179,6 +179,8 @@ function createAudioNodes(pitch, start, stop) {
         osc1waveform = "square";
     } else if (osc1waveformChoice === 1) {
         osc1waveform = "sawtooth";
+    } else if (osc1waveformChoice === 2) {
+        osc1waveform = "triangle";
     } else {
         osc1waveform = "sine";
     }
@@ -187,6 +189,8 @@ function createAudioNodes(pitch, start, stop) {
         osc2waveform = "square";
     } else if (osc2waveformChoice === 1) {
         osc2waveform = "sawtooth";
+    } else if (osc2waveform === 2){
+        osc2waveform = "triangle";
     } else {
         osc2waveform = "sine";
     }
