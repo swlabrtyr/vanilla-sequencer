@@ -8,98 +8,104 @@
  *
  */
 
+window.onload = function() {
 
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-let audioContext = new AudioContext;
-const destination = audioContext.destination;
+  let audioContext = new AudioContext;
+  const destination = audioContext.destination;
+
+  document.querySelector("button").addEventListener("click", function() {
+  audioContext.resume().then(() => {
+    console.log("Playback resumed successfully");
+  });
+});
+
+  // create a gain to be placed between audio nodes and destination
+
+  const output = audioContext.createGain();
+  output.gain.value = 0.3;
+
+  let playing = false;
+  let futureTickTime = audioContext.currentTime;
+  let current16thNote = 1;
+  let tempo = 120;
+  let isPlaying = false;
+  let timerID, pitch, secondsPerBeat;
+  let noteChoice;
+  let end = 0.1;
+  let killOscTime = 0.0;
 
 
-// create a gain to be placed between audio nodes and destination
-
-const output = audioContext.createGain();
-output.gain.value = 0.3;
-
-let playing = false;
-let futureTickTime = audioContext.currentTime;
-let current16thNote = 1;
-let tempo = 120;
-let isPlaying = false;
-let timerID, pitch, secondsPerBeat;
-let noteChoice;
-let end = 0.1;
-let killOscTime = 0.0;
-
-
-/*
+  /*
 
  controllers
 
- */
+*/
 
-// let delayTimeAmnt = 0;
-// let delayFeedback = 0;
-// let ampAtk = 0.3;
-// let ampDec = 0.1;
-// let ampSus = 0.5;
-// let ampRel = 1.3;
-// let filterAtk = 0.5;
-// let filterDec = 0.1;
-// let filterSus = 0.5;
-// let filterRel = 0.7;
+  let delayTimeAmnt = 0;
+  let delayFeedback = 0;
+  let ampAtk = 0.3;
+  let ampDec = 0.1;
+  let ampSus = 0.5;
+  let ampRel = 1.3;
+  let filterAtk = 0.5;
+  let filterDec = 0.1;
+  let filterSus = 0.5;
+  let filterRel = 0.7;
 
-let delayTimeAmnt;
-let delayFeedback;
-let ampAtk;
-let ampDec;
-let ampSus;
-let ampRel;
-let filterAtk;
-let filterDec;
-let filterSus;
-let filterRel;
+  // let delayTimeAmnt;
+  // let delayFeedback;
+  // let ampAtk;
+  // let ampDec;
+  // let ampSus;
+  // let ampRel;
+  // let filterAtk;
+  // let filterDec;
+  // let filterSus;
+  // let filterRel;
 
-// event handling for slider inputs
-// not working 
-let delayTimeInput = document.getElementById("delay-t"),
-    delayFBInput   = document.getElementById("fb-amnt"),
-    ampAttack      = document.getElementById("amp-atk"),
-    ampDecay       = document.getElementById("amp-dec"),
-    ampSustain     = document.getElementById("amp-sus"),
-    ampRelease     = document.getElementById("amp-rel"),
-    filterAttack   = document.getElementById("filter-atk"),
-    filterDecay    = document.getElementById("filter-dec"),
-    filterSustain  = document.getElementById("filter-sus"),
-    filterRelease  = document.getElementById("filter-rel");
+  // event handling for slider inputs
+  // not working 
+  let delayTimeInput = document.getElementById("delay-t"),
+    delayFBInput = document.getElementById("fb-amnt"),
+    ampAttack = document.getElementById("amp-atk"),
+    ampDecay = document.getElementById("amp-dec"),
+    ampSustain = document.getElementById("amp-sus"),
+    ampRelease = document.getElementById("amp-rel"),
+    filterAttack = document.getElementById("filter-atk"),
+    filterDecay = document.getElementById("filter-dec"),
+    filterSustain = document.getElementById("filter-sus"),
+    filterRelease = document.getElementById("filter-rel");
 
-function inputEL(el, val) {
+  function inputEL(el, val) {
     el.addEventListener("input", () => {
-        el.value = parseFloat(el.value);
-        console.log(el, el.value);
+      el.value = parseFloat(el.value);
+      console.log(el, el.value);
     });
-}
+  }
 
-inputEL(delayTimeInput, delayTimeAmnt);
-inputEL(delayFBInput, delayFeedback);
-inputEL(delayFBInput, delayFeedback);
-inputEL(ampAttack, ampAtk);
-inputEL(ampDecay, ampDec);
-inputEL(ampSustain, ampSus);
-inputEL(ampRelease, ampRel);
-inputEL(filterAttack, filterAtk);
-inputEL(filterDecay, filterDec);
-inputEL(filterSustain, filterSus);
-inputEL(filterRelease, filterRel);
+  inputEL(delayTimeInput, delayTimeAmnt);
+  inputEL(delayFBInput, delayFeedback);
+  inputEL(delayFBInput, delayFeedback);
+  inputEL(ampAttack, ampAtk);
+  inputEL(ampDecay, ampDec);
+  inputEL(ampSustain, ampSus);
+  inputEL(ampRelease, ampRel);
+  inputEL(filterAttack, filterAtk);
+  inputEL(filterDecay, filterDec);
+  inputEL(filterSustain, filterSus);
+  inputEL(filterRelease, filterRel);
 
-// choose oscillator waveform in HTML
+  // choose oscillator waveform in HTML
 
-let osc1waveform, osc2waveform, osc2waveformChoice, osc1waveformChoice = 0;
-const startBtn = document.getElementById("play-button");
-const stopBtn = document.getElementById("stop-button");
-const bpm = document.getElementById('bpm');
-let divs = document.querySelectorAll('.box');
+  let osc1waveform, osc2waveform, osc2waveformChoice, osc1waveformChoice = 0;
+  const startBtn = document.getElementById("play-button");
+  const stopBtn = document.getElementById("stop-button");
+  const bpm = document.getElementById('bpm');
+  let divs = document.querySelectorAll('.box');
 
-bpm.oninput = function() {
+  bpm.oninput = function () {
 
     this.type = "range";
     this.step = "1";
@@ -111,29 +117,29 @@ bpm.oninput = function() {
     bpm.innerHTML = tempo;
 
     return tempo;
-};
+  };
 
 
-// slice divs array to get a handle on each individual div
+  // slice divs array to get a handle on each individual div
 
-let divsArray = Array.prototype.slice.call(divs);
+  let divsArray = Array.prototype.slice.call(divs);
 
 
-/*
+  /*
 
  Setup Audio Nodes
- 
- */
 
-function createOsc(type) {
+*/
+
+  function createOsc(type) {
 
     let osc = audioContext.createOscillator();
     osc.type = type;
 
     return osc;
-};
+  };
 
-function createFilter(type, freq) {
+  function createFilter(type, freq) {
 
     let filter = audioContext.createBiquadFilter();
 
@@ -141,10 +147,10 @@ function createFilter(type, freq) {
     filter.type = type;
 
     return filter;
-};
+  };
 
-function ampADSR(src, atkTime, decTime, susTime, relTime,
-                 atkVal, decVal, susVal, relVal) {
+  function ampADSR(src, atkTime, decTime, susTime, relTime,
+    atkVal, decVal, susVal, relVal) {
 
     let time = audioContext.currentTime;
     let gain = audioContext.createGain();
@@ -154,6 +160,10 @@ function ampADSR(src, atkTime, decTime, susTime, relTime,
     // set starting value
     gain.gain.setValueAtTime(0.001, time);
     // attack
+    console.log('attack value : ', atkVal);
+    console.log('current time : ', time);
+    console.log('attack time  : ', atkTime);
+
     gain.gain.exponentialRampToValueAtTime(atkVal, time + atkTime);
     // decay
     gain.gain.exponentialRampToValueAtTime(decVal, time + atkTime + decTime);
@@ -161,16 +171,16 @@ function ampADSR(src, atkTime, decTime, susTime, relTime,
     gain.gain.exponentialRampToValueAtTime(susVal, time + atkTime + decTime + susTime);
     // release
     gain.gain.exponentialRampToValueAtTime(relVal, time + atkTime + decTime +
-                                           susTime + relTime);
+      susTime + relTime);
 
     killOscTime = ampAtk + ampDec + ampSus + ampRel + 0.1;
 
     // console.log("kill osc time: ", killOscTime);
     return gain;
-}
+  }
 
-function filterADSR(filter, atkTime, decTime, susTime, relTime,
-                    atkVal, decVal, susVal, relVal) {
+  function filterADSR(filter, atkTime, decTime, susTime, relTime,
+    atkVal, decVal, susVal, relVal) {
 
     let time = audioContext.currentTime;
 
@@ -190,12 +200,12 @@ function filterADSR(filter, atkTime, decTime, susTime, relTime,
     filter.frequency.exponentialRampToValueAtTime(susVal, time + atkTime + decTime + susTime);
     // release
     filter.frequency.exponentialRampToValueAtTime(relVal, time + atkTime + decTime +
-                                                  susTime + relTime + stopTime);
+      susTime + relTime + stopTime);
 
     return filter;
-}
+  }
 
-function delayFX(delayAmount, fbAmount) {
+  function delayFX(delayAmount, fbAmount) {
 
     let delay = audioContext.createDelay();
     delay.delayTime.value = delayAmount;
@@ -215,36 +225,36 @@ function delayFX(delayAmount, fbAmount) {
     feedback.connect(filter);
 
     return delay;
-}
+  }
 
-function createAudioNodes(pitch, start, stop) {
+  function createAudioNodes(pitch, start, stop) {
 
     if (osc1waveformChoice === 0) {
-        osc1waveform = "square";
+      osc1waveform = "square";
     } else if (osc1waveformChoice === 1) {
-        osc1waveform = "sawtooth";
-    } else if (osc1waveformChoice === 2){
-        osc1waveform = "triangle";
+      osc1waveform = "sawtooth";
+    } else if (osc1waveformChoice === 2) {
+      osc1waveform = "triangle";
     } else {
-        osc1waveform = "sine";
+      osc1waveform = "sine";
     }
 
     if (osc2waveformChoice === 0) {
-        osc2waveform = "square";
+      osc2waveform = "square";
     } else if (osc2waveformChoice === 1) {
-        osc2waveform = "sawtooth";
+      osc2waveform = "sawtooth";
     } else if (osc2waveformChoice === 2) {
-        osc2waveform = "triangle";
+      osc2waveform = "triangle";
     } else {
-        osc2waveform = "sine";
+      osc2waveform = "sine";
     }
 
 
     /*
 
-     create audio nodes
+   create audio nodes
 
-     */
+*/
 
 
     let osc1 = createOsc(osc1waveform);
@@ -267,10 +277,10 @@ function createAudioNodes(pitch, start, stop) {
     let lpFilter1 = createFilter("lowpass", 2050);
 
     let ampEnv = ampADSR(oscMix, ampAtk, ampDec, ampSus, ampRel,
-                         0.7, 0.6, 0.6, 0.001);
+      0.7, 0.6, 0.6, 0.001);
 
     let filterEnv = filterADSR(lpFilter1, filterAtk, filterDec, filterSus, filterRel,
-                               10000, 1000, 250, 100);
+      10000, 1000, 250, 100);
 
     let delay = delayFX(delayTimeAmnt, delayFeedback);
 
@@ -295,86 +305,86 @@ function createAudioNodes(pitch, start, stop) {
 
     stopOsc(osc2, stop);
     stopOsc(osc1, stop);
-}
+  }
 
-function startOsc(osc, start) {
+  function startOsc(osc, start) {
     osc.start(start);
     // console.log("osc started");
-}
+  }
 
 
-function stopOsc(osc, stopTime) {
+  function stopOsc(osc, stopTime) {
     osc.stop(stopTime);
-}
+  }
 
-/*
+  /*
 
  Look-up tables
 
- */
+*/
 
-let buttonArray = [];
-let pitchArray = [];
+  let buttonArray = [];
+  let pitchArray = [];
 
-for (let i = 0; i < 32; i++) {
+  for (let i = 0; i < 32; i++) {
 
     buttonArray.push({
-        ID: i,
-        state: "OFF"
+      ID: i,
+      state: "OFF"
     });
 
     pitchArray.push({
-        ID: "select-" + i,
-        notes: [],
-        // initialize each note value to 220hz
-        value: 220
+      ID: "select-" + i,
+      notes: [],
+      // initialize each note value to 220hz
+      value: 220
     });
 
     for (let j = 0; j < 12; j++) {
-        pitchArray[i].notes.push(j);
-        //console.log(pitchArray[i].notes);
+      pitchArray[i].notes.push(j);
+      //console.log(pitchArray[i].notes);
     }
-};
+  };
 
 
-// set initial sequencer state
+  // set initial sequencer state
 
-let initDivs = (function() {
+  let initDivs = (function () {
 
     return {
 
-        set: function(array, color) {
+      set: function (array, color) {
 
-            for (let i = 0; i < array.length; i++) {
+        for (let i = 0; i < array.length; i++) {
 
-                // array[i].style.backgroundColor = "";
+          // array[i].style.backgroundColor = "";
 
-                array[i].style.borderRadius = "100px";
-                // change the color of the selected div
+          array[i].style.borderRadius = "100px";
+          // change the color of the selected div
 
-                array[i].addEventListener('click', function() {
+          array[i].addEventListener('click', function () {
 
-                    let currColor = this.style.backgroundColor;
-                    let otherColors = this.style.backgroundColor = color;
-                    
-                    switch (currColor) {
+            let currColor = this.style.backgroundColor;
+            let otherColors = this.style.backgroundColor = color;
 
-                    case otherColors:
-                        this.style.backgroundColor = "";
-                    }
-                    
-                }, false);
+            switch (currColor) {
+
+              case otherColors:
+                this.style.backgroundColor = "";
             }
+
+          }, false);
         }
+      }
     };
-})();
+  })();
 
-initDivs.set(divs, "pink");
+  initDivs.set(divs, "pink");
 
 
-// change each div color on the 16th note beat
+  // change each div color on the 16th note beat
 
-let nextDiv = (function() {
+  let nextDiv = (function () {
 
     let countOtherDiv = -1;
     let countCurrentDiv = 0;
@@ -383,168 +393,165 @@ let nextDiv = (function() {
 
     return {
 
-        divCount: function(array) {
+      divCount: function (array) {
 
-            notCurrentDiv = array[++countOtherDiv % array.length];
-            currentDiv = array[++countCurrentDiv % array.length];
+        notCurrentDiv = array[++countOtherDiv % array.length];
+        currentDiv = array[++countCurrentDiv % array.length];
 
 
-            // move sequencer 
-            currentDiv.style.borderRadius = "2px";
-            notCurrentDiv.style.borderRadius = "100px";
-            
+        // move sequencer 
+        currentDiv.style.borderRadius = "2px";
+        notCurrentDiv.style.borderRadius = "100px";
 
-            if (countCurrentDiv > 31) {
-                countOtherDiv = -1;
-                countCurrentDiv = 0;
-            };
-        }
+
+        if (countCurrentDiv > 31) {
+          countOtherDiv = -1;
+          countCurrentDiv = 0;
+        };
+      }
     };
-})();
+  })();
 
-function scheduleNote(beatDivisionNumber, start, stop) {
+  function scheduleNote(beatDivisionNumber, start, stop) {
 
     for (let i = 0; i < buttonArray.length; i++) {
 
-        // check button state
-        
-        if (beatDivisionNumber === buttonArray[i].ID &&
-            buttonArray[i].state === "ON") {
+      // check button state
 
-            // check pitchArray state
-            
-            if (pitchArray.indexOf(pitchArray[i]) === buttonArray.indexOf(buttonArray[i])) {
+      if (beatDivisionNumber === buttonArray[i].ID &&
+        buttonArray[i].state === "ON") {
 
-                pitch = pitchArray[i].value;
+        // check pitchArray state
 
-            }
+        if (pitchArray.indexOf(pitchArray[i]) === buttonArray.indexOf(buttonArray[i])) {
 
-            createAudioNodes(pitch, start, stop);
+          pitch = pitchArray[i].value;
+
         }
+
+        createAudioNodes(pitch, start, stop);
+      }
     }
-}
+    console.log("note scheduled: ", pitch);
+  }
 
 
-// schedule future ticks
+  // schedule future ticks
 
-function futureTick() {
+  function futureTick() {
 
     secondsPerBeat = 60.0 / tempo;
-
     futureTickTime += 0.25 * secondsPerBeat; // future note
+  };
 
-};
 
+  function scheduler() {
 
-function scheduler() {
-    
     // sequencer loop
 
     while (futureTickTime < audioContext.currentTime + 0.1) {
 
-        current16thNote++;
+      current16thNote++;
 
-        if (current16thNote === 32) {
-            current16thNote = 0;
-        }
+      if (current16thNote === 32) {
+        current16thNote = 0;
+      }
 
-        scheduleNote(current16thNote, futureTickTime, futureTickTime + killOscTime);
-        
-        futureTick();
-
-        nextDiv.divCount(divsArray);        
+      scheduleNote(current16thNote, futureTickTime, futureTickTime + killOscTime);
+      futureTick();
+      nextDiv.divCount(divsArray);
     }
 
     timerID = window.setTimeout(scheduler, 25.0);
-};
+  };
 
 
-function buttonToggle(e) {
+  function buttonToggle(e) {
 
     if (e.target.id !== e.currentTarget.id) {
 
-        let target = Number(e.target.id);
+      let target = Number(e.target.id);
 
-        for (let i = 0; i < buttonArray.length; i++) {
+      for (let i = 0; i < buttonArray.length; i++) {
 
-            if (target === buttonArray[i].ID &&
-                buttonArray[i].state === "OFF") {
+        if (target === buttonArray[i].ID &&
+          buttonArray[i].state === "OFF") {
 
-                buttonArray[i].state = "ON";
+          buttonArray[i].state = "ON";
 
 
-            } else if (target === buttonArray[i].ID &&
-                       buttonArray[i].state === "ON") {
+        } else if (target === buttonArray[i].ID &&
+          buttonArray[i].state === "ON") {
 
-                buttonArray[i].state = "OFF";
-            }
+          buttonArray[i].state = "OFF";
         }
+      }
     }
-}
+  }
 
-function selectPitch(e) {
+  function selectPitch(e) {
 
     var noteSelected = notePicker(noteChoice);
 
     if (e.target.id !== e.currentTarget.id) {
 
-        for (let i = 0; i < pitchArray.length; i++) {
+      for (let i = 0; i < pitchArray.length; i++) {
 
-            for (let j = 0; j < pitchArray[i].notes.length; j++) {
+        for (let j = 0; j < pitchArray[i].notes.length; j++) {
 
-                // noteChoice let is selected in index.html
-                if (pitchArray[i].ID === e.target.id &&
-                    noteChoice === pitchArray[i].notes[j]) {
+          // noteChoice let is selected in index.html
+          if (pitchArray[i].ID === e.target.id &&
+            noteChoice === pitchArray[i].notes[j]) {
 
-                    pitchArray[i].value = noteSelected;
-                    console.log("note choice: " + pitchArray[i].value);
-                }
-            }
+            pitchArray[i].value = noteSelected;
+            console.log("note choice: " + pitchArray[i].value);
+          }
         }
+      }
     }
-}
+  }
 
-function notePicker(value) {
+  function notePicker(value) {
 
     var notePicked = Math.pow(2, (noteChoice + 1 * 69 - 69) / 12) * 110;
 
     return notePicked;
-};
+  };
 
 
-// event handlers
+  // event handlers
 
-let btnContainers = document.querySelectorAll(".button-container");
+  let btnContainers = document.querySelectorAll(".button-container");
 
-for (let i = 0; i < btnContainers.length; i++) {
+  for (let i = 0; i < btnContainers.length; i++) {
     btnContainers[i].addEventListener("mouseup", buttonToggle);
-}
+  }
 
-let pitchSelectors = document.querySelectorAll(".pitch-select-container");
+  let pitchSelectors = document.querySelectorAll(".pitch-select-container");
 
-for (let i = 0; i < pitchSelectors.length; i++) {
+  for (let i = 0; i < pitchSelectors.length; i++) {
     pitchSelectors[i].addEventListener("change", selectPitch);
-}
+  }
 
-// show tempo number (secondsPerBeat)
-// document.getElementById('showTempo').innerHTML = bpm;
+  // show tempo number (secondsPerBeat)
+  // document.getElementById('showTempo').innerHTML = bpm;
 
-startBtn.addEventListener('click', () => {
+  startBtn.addEventListener('click', () => {
 
     futureTickTime = audioContext.currentTime;
-    
-    scheduler();
-    
-}, false);
 
-stopBtn.addEventListener('click', () => {
+    scheduler();
+
+  }, false);
+
+  stopBtn.addEventListener('click', () => {
 
     clearTimeout(timerID);
 
     console.log('stopping');
 
-}, false);
-
+  }, false);
+}
 
 
 
