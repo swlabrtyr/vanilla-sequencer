@@ -1,7 +1,6 @@
 # sequencer
-sequencer based on chris wilson's a tale of two clocks
+WebAudio sequencer and synthesizer inspired by Chris Wilson's "A tale of two clocks"
 
-Only works on Chrome for now! 
+Only works on Chrome 
 
-SVG folder is for UI expirmentation! Is totally broken at the moment. 
 
