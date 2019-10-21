@@ -16,10 +16,10 @@ window.onload = function() {
   const destination = audioContext.destination;
 
   document.querySelector("button").addEventListener("click", function() {
-  audioContext.resume().then(() => {
-    console.log("Playback resumed successfully");
+    audioContext.resume().then(() => {
+      console.log("Playback resumed successfully");
+    });
   });
-});
 
   // create a gain to be placed between audio nodes and destination
 
@@ -68,49 +68,49 @@ window.onload = function() {
   // event handling for slider inputs
   // not working 
   let delayTimeInput = document.getElementById("delay-t"),
-    delayFBInput = document.getElementById("fb-amnt"),
-    ampAttack = document.getElementById("amp-atk"),
-    ampDecay = document.getElementById("amp-dec"),
-    ampSustain = document.getElementById("amp-sus"),
-    ampRelease = document.getElementById("amp-rel"),
-    filterAttack = document.getElementById("filter-atk"),
-    filterDecay = document.getElementById("filter-dec"),
-    filterSustain = document.getElementById("filter-sus"),
-    filterRelease = document.getElementById("filter-rel");
+    delayFBInput     = document.getElementById("fb-amnt"),
+    ampAttack        = document.getElementById("amp-atk"),
+    ampDecay         = document.getElementById("amp-dec"),
+    ampSustain       = document.getElementById("amp-sus"),
+    ampRelease       = document.getElementById("amp-rel"),
+    filterAttack     = document.getElementById("filter-atk"),
+    filterDecay      = document.getElementById("filter-dec"),
+    filterSustain    = document.getElementById("filter-sus"),
+    filterRelease    = document.getElementById("filter-rel");
 
-  function inputEL(el, val) {
+  function inputEl(el, val) {
     el.addEventListener("input", () => {
       el.value = parseFloat(el.value);
       console.log(el, el.value);
     });
   }
 
-  inputEL(delayTimeInput, delayTimeAmnt);
-  inputEL(delayFBInput, delayFeedback);
-  inputEL(delayFBInput, delayFeedback);
-  inputEL(ampAttack, ampAtk);
-  inputEL(ampDecay, ampDec);
-  inputEL(ampSustain, ampSus);
-  inputEL(ampRelease, ampRel);
-  inputEL(filterAttack, filterAtk);
-  inputEL(filterDecay, filterDec);
-  inputEL(filterSustain, filterSus);
-  inputEL(filterRelease, filterRel);
+  inputEl(delayTimeInput, delayTimeAmnt);
+  inputEl(delayFBInput, delayFeedback);
+  inputEl(delayFBInput, delayFeedback);
+  inputEl(ampAttack, ampAtk);
+  inputEl(ampDecay, ampDec);
+  inputEl(ampSustain, ampSus);
+  inputEl(ampRelease, ampRel);
+  inputEl(filterAttack, filterAtk);
+  inputEl(filterDecay, filterDec);
+  inputEl(filterSustain, filterSus);
+  inputEl(filterRelease, filterRel);
 
   // choose oscillator waveform in HTML
 
   let osc1waveform, osc2waveform, osc2waveformChoice, osc1waveformChoice = 0;
   const startBtn = document.getElementById("play-button");
-  const stopBtn = document.getElementById("stop-button");
-  const bpm = document.getElementById('bpm');
-  let divs = document.querySelectorAll('.box');
+  const stopBtn  = document.getElementById("stop-button");
+  const bpm      = document.getElementById('bpm');
+  let divs       = document.querySelectorAll('.box');
 
-  bpm.oninput = function () {
+  const updateTempo = function () {
 
     this.type = "range";
     this.step = "1";
-    this.max = "150";
-    this.min = "5";
+    this.max  = "150";
+    this.min  = "5";
 
     tempo = this.value;
 
@@ -342,7 +342,7 @@ window.onload = function() {
 
     for (let j = 0; j < 12; j++) {
       pitchArray[i].notes.push(j);
-      //console.log(pitchArray[i].notes);
+      console.log(pitchArray[i].notes);
     }
   };
 
@@ -398,11 +398,9 @@ window.onload = function() {
         notCurrentDiv = array[++countOtherDiv % array.length];
         currentDiv = array[++countCurrentDiv % array.length];
 
-
         // move sequencer 
         currentDiv.style.borderRadius = "2px";
         notCurrentDiv.style.borderRadius = "100px";
-
 
         if (countCurrentDiv > 31) {
           countOtherDiv = -1;
@@ -426,6 +424,7 @@ window.onload = function() {
         if (pitchArray.indexOf(pitchArray[i]) === buttonArray.indexOf(buttonArray[i])) {
 
           pitch = pitchArray[i].value;
+          console.log(pitch)
 
         }
 
@@ -490,8 +489,9 @@ window.onload = function() {
   }
 
   function selectPitch(e) {
-
+    console.log(e)
     var noteSelected = notePicker(noteChoice);
+    console.log(noteSelected)
 
     if (e.target.id !== e.currentTarget.id) {
 

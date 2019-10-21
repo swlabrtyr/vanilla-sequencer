@@ -24,7 +24,7 @@
     <div id="controls">
       <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" id="play-button">play</button>
       <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="stop-button">stop</button>
-      <div id="tempo" onInput="document.getElementById('showTempo').innerText=tempo;">Tempo :&nbsp; <span id="showTempo">120</span>
+      <div id="tempo" onInput=updateTempo>Tempo :&nbsp; <span id="showTempo"></span>
         <p class="bpm">
           <input class="slider mdl-slider mdl-js-slider" id="bpm" type="range" min="30.0" max="160.0" step="1" value="120"
             onInput="tempo = event.target.value;">
